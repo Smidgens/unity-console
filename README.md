@@ -7,8 +7,8 @@
 * Reflection-based runtime console for Unity projects.
 * No extras required - usable with existing code and wireable through inspector.
 * Bind handlers for scene objects or project assets.
-* Supports input and parsing of all primitive type arguments + common Unity structs (Vector2/3/4, Color...).
-* Multiple input conventions supported (fn(x), fn x, variable=x)
+* Supports input and parsing of all primitive type arguments + common Unity structs (`Vector2/3/4`, `Color`...).
+* Supports multiple input forms (`fn(x)`, `fn x`, `variable=x`)
 * Minimalistic and functional UI (Unity IMGUI).
 * 🤞 Reasonably lightweight.
 <br/>
