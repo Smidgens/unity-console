@@ -1,0 +1,18 @@
+{
+    "name": "Smidgenomics.Unity.Console.Editor",
+    "rootNamespace": "Smidgenomics.Unity.Console.Editor",
+    "references": [
+        "GUID:3ceba062e0ec00a4f9645ce852093726"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
