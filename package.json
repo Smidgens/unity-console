@@ -2,7 +2,7 @@
 	"name":"com.smidgenomics.unity-console",
 	"version":"0.1.0",
 	"displayName":"Console",
-	"description":"Runtime dev console",
+	"description":"Runtime Developer Console.",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Smidgens/unity-console.git"
@@ -13,6 +13,9 @@
 	},
 	"keywords":[
 		"console",
-		"unity-console"
+		"unity-console",
+		"dev-console",
+		"runtime-console",
+		"smidgenomics"
 	]
 }

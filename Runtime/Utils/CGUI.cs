@@ -7,7 +7,7 @@ namespace Smidgenomics.Unity.Console
 
 	internal static class CGUI
 	{
-		public static Texture2D TextureWhite => _whiteTex.Value;
+		public static Texture2D TextureWhite => GetWhiteTex();
 
 		public static void Draw(in Rect pos, in Color c)
 		{
@@ -57,14 +57,22 @@ namespace Smidgenomics.Unity.Console
 		}
 
 
-		private static Lazy<Texture2D> _whiteTex = new Lazy<Texture2D>(() =>
+
+		private static Texture2D GetWhiteTex()
 		{
-			var t = new Texture2D(1, 1);
-			t.SetPixel(0, 0, Color.white);
-			t.Apply();
-			t.wrapMode = TextureWrapMode.Repeat;
-			t.filterMode = FilterMode.Point;
-			return t;
-		});
+			if(!_whiteTex)
+			{
+				_whiteTex = new Texture2D(1, 1);
+				_whiteTex.SetPixel(0, 0, Color.white);
+				_whiteTex.Apply();
+				_whiteTex.wrapMode = TextureWrapMode.Repeat;
+				_whiteTex.filterMode = FilterMode.Point;
+				return _whiteTex;
+			}
+			return _whiteTex;
+		}
+
+
+		private static Texture2D _whiteTex = null;
 	}
 }
