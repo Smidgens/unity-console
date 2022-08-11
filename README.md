@@ -17,9 +17,13 @@
 **⌛ In Progress**
 
 * [ ] Static methods and fields.
-* [ ] Optional method parameters
-* [ ] Automatic type casting for compatible types (float -> double...)
+* [ ] Optional method parameters.
+
+**Future**
+
+* [ ] Automatic type casting for compatible types (float -> double...).
 * [ ] Custom input parsers and type handlers.
+* [ ] Automatic binding of static methods and fields that match configured criteria.
 
 <br/>
 
