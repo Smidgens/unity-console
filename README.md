@@ -30,7 +30,8 @@
 ## 📦 Install
 
 1. Open Package Manager
-2. Paste git URL (`https://github.com/Smidgens/unity-console.git#<version_tag>`)
+2. Paste GitHub URL:\
+`https://github.com/Smidgens/unity-console.git#<version_tag>`
 
 
 <br/>
