@@ -18,6 +18,8 @@
 
 * [ ] Static methods and fields.
 * [ ] Optional method parameters.
+* [ ] Command attribute for static methods
+* [ ] Config var attribute for static fields
 
 **Future**
 
