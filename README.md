@@ -4,7 +4,7 @@
 
 ## ℹ️ Features
 
-* Reflection-based runtime console for Unity projects.
+* Reflection-based in-game console.
 * No extras required - usable with existing code and wireable through inspector.
 * Bind handlers for scene objects or project assets.
 * Supports input and parsing of all primitive type arguments + common Unity structs (`Vector2/3/4`, `Color`...).
