@@ -2,7 +2,7 @@
 ![](/.github/gallery.png?raw=true "")
 
 
-## ℹ️ Features
+# ℹ️ Features
 
 * Reflection-based in-game console.
 * No extras required - usable with existing code and wireable through inspector.
@@ -29,7 +29,7 @@
 
 <br/>
 
-## 📦 Install
+# 📦 Install
 
 1. Open Package Manager
 2. Paste GitHub URL:\
@@ -38,7 +38,7 @@
 
 <br/>
 
-## 🚀 Use
+# 🚀 Use
 
 
 1. Create a `Console` asset in your project.
