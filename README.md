@@ -16,13 +16,13 @@
 
 **⌛ In Progress**
 
-* [ ] Static methods and fields.
-* [ ] Optional method parameters.
-* [ ] Command attribute for static methods
-* [ ] Config var attribute for static fields
+* [ ] Command help hints, displayable in GUI window through help command.
+* [ ] Bind static methods and fields to console, globally or per scene.
+* [ ] Automatically register commands through Command (static methods) and ConfigVar (static field) attributes.
 
-**Future**
+**Planned**
 
+* [ ] Optional arguments (C# method arguments with default values).
 * [ ] Automatic type casting for compatible types (float -> double...).
 * [ ] Custom input parsers and type handlers.
 * [ ] Automatic binding of static methods and fields that match configured criteria.
