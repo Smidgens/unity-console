@@ -6,6 +6,22 @@ namespace Smidgenomics.Unity.Console
 
 	internal static class Float_
 	{
+		// subdivide x2
+		public static (float, float) Split(this float v, in float w1, in float w2)
+		{
+			return (0, 0);
+		}
+
+		// subdivide x3
+		public static (float, float, float) Split
+		(
+			this float v,
+			in float w1, in float w2, in float w3
+		)
+		{
+			return (0, 0, 0);
+		}
+
 		public static float[] Split(this float v, int n)
 		{
 			if (n < 1) { return new float[] { v }; }

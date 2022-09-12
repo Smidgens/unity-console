@@ -9,24 +9,6 @@ namespace Smidgenomics.Unity.Console.Editor
 	/// </summary>
 	internal static class Rect_
 	{
-		public static Rect[] SplitHorizontally(this Rect pos, double pad, params float[] widths)
-		{
-			var r = new Rect[widths.Length];
-			if (widths.Length == 0) { return r; }
-			var padding = GetSplitPadding(widths.Length, pos.width, pad);
-			var totalSize = pos.width - padding.total;
-			var w = totalSize.Split(widths);
-			var offset = 0f;
-			for (var i = 0; i < w.Length; i++)
-			{
-				r[i] = pos;
-				r[i].x += offset;
-				r[i].width = w[i];
-				offset += w[i] + padding.offset;
-			}
-			return r;
-		}
-
 		public static Rect Pad(this Rect r, float v)
 		{
 			var c = r.center;
@@ -43,37 +25,7 @@ namespace Smidgenomics.Unity.Console.Editor
 			return r;
 		}
 
-
-
-		private static SplitPad GetSplitPadding(int n, float v, double p)
-		{
-			if (n < 2) { return default; }
-			var o = System.Convert.ToSingle(p);
-			// ratio
-			if (o < 1) { o = o * v; }
-			return new SplitPad { offset = o, total = o * (n - 1) };
-		}
 		private struct SplitPad { public float offset, total; }
-	}
-}
-
-namespace Smidgenomics.Unity.Console.Editor
-{
-	using System.Linq;
-
-	/// <summary>
-	/// float helpers
-	/// </summary>
-	internal static class Float_
-	{
-		public static float[] Split(this float v, params float[] weights)
-		{
-			if (weights.Length == 0) { return new float[0]; }
-			var flex = v;
-			// absolute weights, >1
-			foreach (var w in weights) { if (w > 1f) { flex -= w; } }
-			return weights.Select((w, i) => w > 1f ? w : w * flex).ToArray();
-		}
 	}
 }
 
@@ -97,6 +49,45 @@ namespace Smidgenomics.Unity.Console.Editor
 
 namespace Smidgenomics.Unity.Console.Editor
 {
+	using System;
+	using System.Reflection;
+	using System.Collections.Generic;
+	using UnityEngine;
+	using SO = UnityEditor.SerializedObject;
+
+	internal static class SerializedObject_
+	{
+		public static void FindVisibleFields(this SO o, List<string> l)
+		{
+			FindVisibleFields(o.targetObject.GetType(), l);
+		}
+
+		private static void FindVisibleFields(Type t, List<string> l)
+		{
+			foreach (var f in t.GetFields(RFlags.ANY_INSTANCE_MEMBER))
+			{
+				if (!IsInspectorVisible(f)) { continue; }
+				l.Add(f.Name);
+			}
+		}
+
+		private static bool IsInspectorVisible(FieldInfo m)
+		{
+			if (m.IsNotSerialized) { return false; }
+			if (m.GetCustomAttribute<HideInInspector>() != null) { return false; }
+
+			if (!m.IsPublic)
+			{
+				if (m.GetCustomAttribute<SerializeField>() == null) { return false; }
+			}
+			if (m.GetCustomAttribute<NonSerializedAttribute>() != null) { return false; }
+			return true;
+		}
+	}
+}
+
+namespace Smidgenomics.Unity.Console.Editor
+{
 	using System.Collections.Generic;
 
 	internal static class HashSet_
@@ -111,5 +102,7 @@ namespace Smidgenomics.Unity.Console.Editor
 			}
 			set.Add(key);
 		}
+
+
 	}
 }

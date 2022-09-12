@@ -91,9 +91,9 @@ namespace Smidgenomics.Unity.Console.Editor
 					for (var i = 2; i < ctx.mTypes.arraySize; i++)
 					{
 						var item = ctx.mTypes.GetArrayElementAtIndex(i);
-						var pt = ConsoleReflection.FindType(item.stringValue);
+						var pt = Type.GetType(item.stringValue, false);
 						var tname = pt != null
-						? pt.GetDisplayName()
+						? pt.GetNameOrAlias()
 						: Label.INVALID;
 						blabel += tname;
 
@@ -140,7 +140,7 @@ namespace Smidgenomics.Unity.Console.Editor
 					rows[i].center = c;
 				}
 
-				CGUI.Border(pos, BORDER_COLOR);
+				BorderGUI.Border(pos, BORDER_COLOR);
 				EditorGUI.DrawRect(labelLine, BORDER_COLOR);
 				EditorGUI.LabelField(labelPos.Pad(2f).PadLeft(2f), prop.displayName);
 				SelectTarget(rows[0], ctx);

@@ -8,10 +8,35 @@ namespace Smidgenomics.Unity.Console
 	using UnityObject = UnityEngine.Object;
 
 	[Serializable]
-	internal struct MemberInfo
+	internal struct StringifiedMember
 	{
 		public string name;
+		// [type, return, params]
 		public string[] types;
+
+		public MethodInfo LoadAsMethod()
+		{
+			if (string.IsNullOrEmpty(name)) { return null; }
+
+			if (types.Length < 2) { return null; }
+
+			var ownerType = Type.GetType(types[0], false);
+			var returnType = Type.GetType(types[1], false);
+
+			if (ownerType == null || returnType == null)
+			{
+				return null;
+			}
+
+			var ptypes = new Type[types.Length - 2];
+
+			for (var i = 0; i < ptypes.Length; i++)
+			{
+				ptypes[i] = Type.GetType(types[i + 2], false);
+			}
+			return ownerType.GetMethod(name, RFlags.ANY_INSTANCE_MEMBER, null, ptypes, null);
+
+		}
 	}
 
 	[Serializable]
@@ -30,8 +55,8 @@ namespace Smidgenomics.Unity.Console
 		internal static class _FN
 		{
 			public const string
-			M_NAME = nameof(_member) + "." + nameof(MemberInfo.name),
-			M_TYPES = nameof(_member) + "." + nameof(MemberInfo.types),
+			M_NAME = nameof(_member) + "." + nameof(StringifiedMember.name),
+			M_TYPES = nameof(_member) + "." + nameof(StringifiedMember.types),
 			CACHE_KEY = nameof(_cacheKey),
 			TARGET = nameof(_target);
 		}
@@ -39,7 +64,7 @@ namespace Smidgenomics.Unity.Console
 
 		[SerializeField] private int _cacheKey; // cache helper
 		[SerializeField] private UnityObject _target;
-		[SerializeField] MemberInfo _member = default;
+		[SerializeField] StringifiedMember _member = default;
 
 		// key, method, init
 		private (int, MethodInfo, bool) _cache;

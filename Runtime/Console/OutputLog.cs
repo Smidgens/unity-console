@@ -7,66 +7,76 @@ namespace Smidgenomics.Unity.Console
 
 	internal interface IOutputLog
 	{
+		/// <summary>
+		/// Number of items
+		/// </summary>
 		public int Length { get; }
-		public int ID { get; }
+		/// <summary>
+		/// Caching helper
+		/// </summary>
+		public uint ID { get; }
+
+		/// <summary>
+		/// Get log item at index
+		/// </summary>
+		public IOutputLogItem this[int i] { get; }
+
+		/// <summary>
+		/// Add log item
+		/// </summary>
 		public void Append(string msg, int type);
-		public IOutputLogItem GetItem(int i);
 	}
 
 	internal interface IOutputLogItem
 	{
 		public int Type { get; }
 		public string Text { get; }
-		public DateTime Date { get; }
+		public DateTime Time { get; }
 	}
 
 	internal class OutputLog : IOutputLog
 	{
 		public int Length => _items.Count;
-		public int ID { get; private set; } = GetTimestamp();
+		public uint ID { get; private set; } = 1;
 
-		public IOutputLogItem GetItem(int i)
+		public IOutputLogItem this[int i]
 		{
-			if (i < 0 || i >= _items.Count) { return null; }
-			return _items[i];
-		}
-
-		public int CountItems(int t)
-		{
-			throw new NotImplementedException();
+			get
+			{
+				if (i < 0 || i >= _items.Count)
+				{
+					throw new IndexOutOfRangeException();
+				}
+				return _items[i];
+			}
 		}
 
 		public void Append(string text, int type = 0)
 		{
-			var date = DateTime.Now;
-			_items.Add(new LogItem(text, date, type));
+			_items.Add(new LogItem(text, DateTime.Now, type));
 		}
 
 		public void Clear()
 		{
-			ID = GetTimestamp();
 			_items.Clear();
+			ID++;
 		}
 
-		public class LogItem : IOutputLogItem
+		private readonly List<LogItem> _items = new List<LogItem>();
+
+		private readonly struct LogItem : IOutputLogItem
 		{
-			public string Text { get; } = "";
-			public int Type { get; } = 0;
-			public DateTime Date { get; } = default;
+			public string Text { get; }
+			public int Type { get; }
+			public DateTime Time { get; }
 
 			public LogItem(string t, DateTime date, int type = 0)
 			{
 				Type = type;
 				Text = t;
-				Date = date;
+				Time = date;
 			}
 		}
 
-		private List<LogItem> _items = new List<LogItem>();
-
-		private static int GetTimestamp()
-		{
-			return (int)(DateTime.Now).ToUnixMS();
-		}
 	}
 }

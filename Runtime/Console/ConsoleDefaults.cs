@@ -6,16 +6,13 @@ namespace Smidgenomics.Unity.Console
 	using System;
 
 #if SMIDGENOMICS_DEV
-	[CreateAssetMenu(menuName = "Console/Defaults")]
+	[CreateAssetMenu(menuName = "Console/Resources")]
 #endif
 	internal class ConsoleDefaults : ScriptableObject
 	{
-		public static ConsoleDefaults Instance
-		{
-			get => GetInstance();
-		}
+		public static ConsoleDefaults Instance => GetInstance();
 
-		private static ConsoleDefaults GetInstance()
+		public static ConsoleDefaults GetInstance()
 		{
 			var (instance, init) = _cache;
 			if (init) { return instance; }

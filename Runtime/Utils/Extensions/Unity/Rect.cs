@@ -6,6 +6,53 @@ namespace Smidgenomics.Unity.Console
 
 	internal static partial class Rect_
 	{
+		public static void Pad(this ref Rect r, float p) => r.Pad(p, p, p, p);
+		public static void Pad(this ref Rect r, float h, float v) => r.Pad(h, h, v, v);
+		public static void Pad(this ref Rect rect, float l, float r, float t, float b)
+		{
+			var nr = rect;
+			nr.width -= l + r;
+			nr.height -= t + b;
+			nr.x += l;
+			nr.y += t;
+		}
+
+		public static Rect SliceTop(this ref Rect r, in float s)
+		{
+			var r2 = r;
+			r2.height = s;
+			r.height -= s;
+			r.position += new Vector2(0f, s);
+
+			return r2;
+		}
+
+		public static Rect SliceBottom(this ref Rect r, in float s)
+		{
+			var r2 = r;
+			r2.height = s;
+			r.height -= s;
+			r2.y += r.height;
+			return r2;
+		}
+
+		public static Rect SliceLeft(this ref Rect r, in float w)
+		{
+			var r2 = r;
+			r2.width = w;
+			r.width -= w;
+			r.x += w;
+			return r2;
+		}
+
+		public static Rect SliceRight(this ref Rect r, in float w)
+		{
+			var r2 = r;
+			r2.width = w;
+			r.width -= w;
+			r2.x += r.width;
+			return r2;
+		}
 
 		public static Rect Resize(this Rect r, float s)
 		{
@@ -23,17 +70,6 @@ namespace Smidgenomics.Unity.Console
 			r.height += sy * 2f;
 			r.center = c;
 			return r;
-		}
-
-
-		public static Rect[] SplitHorizontally(this Rect r, int n, double pad = 0.0)
-		{
-			return r.SplitHorizontally(pad, r.width.Split(n));
-		}
-
-		public static Rect[] SplitHorizontally(this Rect pos, params float[] widths)
-		{
-			return SplitHorizontally(pos, 0.0, widths);
 		}
 
 		public static Rect[] SplitHorizontally(this Rect pos, double pad, params float[] widths)
@@ -59,11 +95,6 @@ namespace Smidgenomics.Unity.Console
 			return r.SplitVertically(pad, r.height.Split(n));
 		}
 
-		public static Rect[] SplitVertically(this Rect pos, params float[] widths)
-		{
-			return SplitVertically(pos, 0.0, widths);
-		}
-
 		public static Rect[] SplitVertically(this Rect pos, double pad, params float[] sizes)
 		{
 			var r = new Rect[sizes.Length];
@@ -82,36 +113,6 @@ namespace Smidgenomics.Unity.Console
 				offset += weights[i] + padding.offset;
 			}
 			return r;
-		}
-
-		public static Rect Pad(this Rect r, float p)
-		{
-			return r.Pad(p, p, p, p);
-		}
-
-		public static Rect Pad(this Rect r, float h, float v)
-		{
-			return r.Pad(h, h, v, v);
-		}
-
-		public static Rect Pad(this Rect r, Vector2 p)
-		{
-			return r.Pad(p.x, p.x, p.y, p.y);
-		}
-
-		public static Rect Pad(this Rect r, RectOffset o)
-		{
-			return r.Pad(o.left, o.right, o.top, o.bottom);
-		}
-
-		public static Rect Pad(this Rect rect, float l, float r, float t, float b)
-		{
-			var nr = rect;
-			nr.width -= l + r;
-			nr.height -= t + b;
-			nr.x += l;
-			nr.y += t;
-			return nr;
 		}
 
 		private static SplitPad GetSplitPadding(int n, float v, double p)

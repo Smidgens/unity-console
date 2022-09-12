@@ -2,22 +2,44 @@
 
 namespace Smidgenomics.Unity.Console.Editor
 {
-	using UnityEngine;
 	using UnityEditor;
-	using System;
+	using System.Collections.Generic;
 
-	using UObject = UnityEngine.Object;
 	using SP = UnityEditor.SerializedProperty;
 	using SO = UnityEditor.SerializedObject;
 
 	internal class _Base : Editor
 	{
-		protected void Find(in string name, ref SP prop)
+		public override void OnInspectorGUI()
+		{
+			if(_fieldNames == null)
+			{
+				_fieldNames = new List<string>();
+				serializedObject.FindVisibleFields(_fieldNames);
+			}
+
+			serializedObject.UpdateIfRequiredOrScript();
+			foreach (var n in _fieldNames)
+			{
+				if (!ShowField(n)) { continue; }
+				var p = serializedObject.FindProperty(n);
+				if (p == null) { continue; }
+				EditorGUILayout.PropertyField(p);
+			}
+			serializedObject.ApplyModifiedProperties();
+		}
+
+		protected virtual bool ShowField(string name)
+		{
+			return true;
+		}
+
+		protected void Find(string name, ref SP prop)
 		{
 			prop = serializedObject.FindProperty(name);
 		}
 
-		protected static void Find(SO so, in string[] names, ref SP[] props)
+		protected static void Find(SO so, string[] names, ref SP[] props)
 		{
 			if (props.Length != names.Length)
 			{
@@ -29,13 +51,7 @@ namespace Smidgenomics.Unity.Console.Editor
 			}
 		}
 
-		protected static void LayoutFields(params SP[] props)
-		{
-			foreach (var p in props)
-			{
-				EditorGUILayout.PropertyField(p);
-			}
-		}
+		private List<string> _fieldNames = null;
 
 	}
 }

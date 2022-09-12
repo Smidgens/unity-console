@@ -22,7 +22,7 @@ namespace Smidgenomics.Unity.Console
 		{
 			public const string
 			CONSOLE_GUI = _PREFIX + "Console GUI",
-			CONSOLE_HANDLER = _PREFIX + "Console Handler";
+			CONSOLE_HANDLER = _PREFIX + "Console Command (Scene)";
 			private const string _PREFIX = "Smidgenomics/Console/";
 		}
 

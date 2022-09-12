@@ -7,100 +7,158 @@ namespace Smidgenomics.Unity.Console
 	using System.Reflection;
 	using System.Text;
 	using System.Collections.Generic;
-	using UnityObject = UnityEngine.Object;
-	using System.Linq;
 
-
-
+#if !CONSOLE_DISABLE_CM
 	[CreateAssetMenu(menuName = Config.CreateAssetMenu.CONSOLE)]
-	internal class Console : ScriptableObject
+#endif
+	public class Console : ScriptableObject, IConsole
 	{
-		public IOutputLog Log => _log;
+		public const string INIT_MSG = "Console initialized";
 
-		public struct HandlerOptions
+		public event Action logCleared = null;
+
+		public static class LogMsg
 		{
-			public int priority;
-			public bool invokeUnsafe;
+			public const string
+			NO_RESULTS = "No results",
+			VARIABLES = "Variables",
+			METHODS = "Methods",
+			UNKNOWN_ERR = "Unknown error in handler",
+			VARIABLE_NF = "Variable not found:\n  '{0}'",
+			METHOD_NF = "Method not found:\n  '{0}'";
 		}
 
-		public class HandlerKey { }
-
-		public void AddLog(string msg) => _log.Append(msg);
+		public void AddLog(object o) => AddLog(o.ToString());
+		public void AddLog(string msg) => AddLog(msg, 0);
 		public void AddLog(string msg, int type) => _log.Append(msg, type);
-
-		public void Init()
+		public void Clear()
 		{
-			_log.Append("Console initialized", 1);
+			_log.Clear();
+			logCleared?.Invoke();
 		}
 
 		public void Process(string input)
 		{
-			var fn = FindSpecialHandler(input);
-			if(fn != null)
-			{
-				fn.Invoke();
-				return;
-			}
 			HandleInput(input);
 		}
 
-		public void RemoveHandler(HandlerKey key)
+		public void RemoveCommand(in CommandHandle key)
 		{
-			_handlers.RemoveAll(x => x.key == key);
-		}
+			if(!_htypes.TryGetValue(key, out var type)) { return; }
+			_htypes.Remove(key);
 
-		public HandlerKey AddHandler
+			switch (type)
+			{
+				case HandlerType.Method:
+					Remove(key, _methods);
+					break;
+				case HandlerType.Prop:
+					Remove(key, _variables);
+					break;
+			}
+		}
+		
+		public CommandHandle AddCommand
 		(
-			string keyword,
-			UnityObject target,
-			MethodInfo method,
-			HandlerOptions options = default
+			string name,
+			MemberInfo mi,
+			object context,
+			string description
 		)
 		{
-
-			return AddHandler
-			(
-				target,
-				keyword,
-				method,
-				options.priority,
-				options.invokeUnsafe
-			);
+			switch (mi.MemberType)
+			{
+				case MemberTypes.Method:
+					return AddCommand(name, mi as MethodInfo, context, description);
+				case MemberTypes.Property:
+					return AddCommand(name, mi as PropertyInfo, context, description);
+				case MemberTypes.Field:
+					return AddCommand(name, mi as FieldInfo, context, description);
+			}
+			return default;
 		}
 
-		//public Color BackgroundColor => _backgroundColor;
-
-		//[SerializeField]
-		//private Color _backgroundColor = Color.black * 0.5f;
-
-		private List<RuntimeHandler> _handlers = new List<RuntimeHandler>();
-		private readonly OutputLog _log = new OutputLog();
-
-		private class RuntimeHandler
-		{
-			public HandlerKey key;
-			public string name;
-			public UnityObject target;
-			public MethodInfo method;
-			public Type[] parameters;
-			public Dictionary<string, Type> optionalParameters;
-			public int priority;
-			public bool invokeUnsafe;
-		}
-
-		private HandlerKey AddHandler
+		internal CommandHandle AddCommand
 		(
-			UnityObject target,
+			string name,
+			FieldInfo field,
+			object context,
+			string description = ""
+		)
+		{
+			if (field.IsInitOnly)
+			{
+				return default;
+			}
+
+			if (!ConsoleReflection.IsConsoleUsable(field.FieldType))
+			{
+				return default;
+			}
+
+			var key = _keys.Next();
+
+			var item = new VariableHandler
+			{
+				key = key,
+				name = name,
+				context = context,
+				field = field,
+				description = description
+			};
+			_htypes[key] = HandlerType.Prop;
+			_variables.Add(item);
+
+			return key;
+		}
+
+		internal CommandHandle AddCommand
+		(
+			string name,
+			PropertyInfo property,
+			object context,
+			string description = ""
+		)
+		{
+			if (!ConsoleReflection.IsConsoleUsable(property.PropertyType))
+			{
+				return KeyGen.Empty;
+			}
+
+			if (!property.IsReadWrite()) { return KeyGen.Empty; }
+
+			var key = _keys.Next();
+
+			var item = new VariableHandler
+			{
+				key = key,
+				name = name,
+				context = context,
+				property = property,
+				description = description
+			};
+			_htypes[key] = HandlerType.Prop;
+			_variables.Add(item);
+
+			return key;
+		}
+
+		internal CommandHandle AddCommand
+		(
 			string name,
 			MethodInfo method,
-			int priority,
-			bool invokeUnsafe
+			object context,
+			string description = ""
 		)
 		{
-			if (method.ReturnType != typeof(void))
+			var err = ValidateMethod(method, context);
+
+			if (!string.IsNullOrEmpty(err))
 			{
-				Debug.LogError($"Invalid handler: '{method.Name}'");
-				return null;
+#if UNITY_EDITOR
+				Debug.LogError(err);
+#endif
+				return KeyGen.Empty;
 			}
 
 			var parameters = method.GetParameters();
@@ -126,34 +184,204 @@ namespace Smidgenomics.Unity.Console
 
 			if (invalid)
 			{
+#if UNITY_EDITOR
 				Debug.LogError($"Invalid handler: '{method.Name}'");
-				return null;
+#endif
+				return KeyGen.Empty;
 			}
 
-			var key = new HandlerKey();
+			var key = _keys.Next();
 
-			var item = new RuntimeHandler
+			var item = new MethodHandler
 			{
 				key = key,
 				name = name,
-				target = target,
+				context = context,
 				method = method,
+				description = description,
 				parameters = required.ToArray(),
-				optionalParameters = optional,
-				priority = priority,
-				invokeUnsafe = invokeUnsafe,
 			};
 
-			_handlers.Add(item);
-
-			_handlers = _handlers
-			.OrderBy(x => x.name)
-			.ThenBy(x => x.priority)
-			.ToList();
+			_htypes[key] = HandlerType.Method;
+			_methods.Add(item);
 
 			return key;
 		}
 
+		internal IOutputLog Log => _log;
+		internal void Init() => _initFn.Invoke(this);
+
+		internal static class Keyword
+		{
+			public const string
+			LIST = "list",
+			HELP = "describe",
+			INSPECT = "value_of",
+			CLEAR = "clear";
+		}
+
+		[Expand]
+		[SerializeField]
+		private ConsoleSettings _settings = new ConsoleSettings();
+
+		private List<VariableHandler> _variables = new List<VariableHandler>();
+		private List<MethodHandler> _methods = new List<MethodHandler>();
+
+		private Dictionary<CommandHandle, HandlerType>
+		_htypes = new Dictionary<CommandHandle, HandlerType>();
+
+		private delegate void InitFn(Console c); // lazy init
+		private static InitFn _initFn = InitStart;
+
+		private readonly OutputLog _log = new OutputLog();
+		private KeyGen _keys = new KeyGen();
+
+		private enum HandlerType { Method, Prop, Field }
+
+		private static void InitStart(Console c)
+		{
+			c.InitDefaultHandlers();
+			c.InitAttributeHandlers();
+			c.AddLog(INIT_MSG, 1);
+			_initFn = NoOp.Action.A1;
+		}
+
+		private void InitAttributeHandlers()
+		{
+			if(_settings.attributes == AttributeSearchScope.None)
+			{
+				return;
+			}
+			ConsoleHelper.FindAttributes(this, _settings.attributes);
+		}
+
+		private void InitDefaultHandlers()
+		{
+			var c = this as IConsole;
+			c.AddCommand(Keyword.CLEAR, MethodHelper.GetMethod(Clear), this);
+			c.AddCommand(Keyword.LIST, MethodHelper.GetMethod(ListHandlers), this);
+			Action<string> listFilter = ListHandlers;
+			Action<string> help = Describe;
+			Action<string> inspect = Inspect;
+			c.AddCommand(Keyword.LIST, listFilter.Method, this);
+			c.AddCommand(Keyword.HELP, help.Method, this);
+			c.AddCommand(Keyword.INSPECT, inspect.Method, this);
+		}
+
+		private static string ValidateMethod(MethodInfo m, object ctx)
+		{
+			if (m.ReturnType != typeof(void))
+			{
+				return $"Cannot bind method with return value: '{m.Name}'";
+			}
+
+			if (m.IsStatic && ctx != null)
+			{
+				return "Cannot bind static method with context";
+			}
+
+			if (!m.IsStatic && ctx == null)
+			{
+				return "Cannot bind instance method without context";
+			}
+
+			if (!m.IsStatic && ctx.GetType() != m.ReflectedType)
+			{
+				return "Cannot bind method with context of different type";
+			}
+			return null;
+		}
+
+		private interface IKeyedHandler
+		{
+			public string Name { get; }
+			public string Description { get; }
+			public bool Match(in CommandHandle k);
+			public void Stringify(StringBuilder b, uint indent, bool newline);
+		}
+
+		private struct MethodHandler : IKeyedHandler
+		{
+			public string Name => name;
+			public string Description => description;
+			public CommandHandle key;
+			public string name, description;
+			public object context;
+			public Type[] parameters;
+			public MethodInfo method;
+
+			public bool Match(in CommandHandle o) => o == key;
+
+			public void Stringify(StringBuilder s, uint indent = 1, bool newLine = true)
+			{
+				for (int i = 0; i < indent; i++)
+				{
+					s.Append("  ");
+				}
+
+				s.Append(name);
+				s.Append(" (");
+				var pi = 0;
+
+				foreach (var p in parameters)
+				{
+					s.Append(p.GetNameOrAlias());
+					if (pi < parameters.Length - 1)
+					{
+						s.Append(", ");
+					}
+					pi++;
+				}
+				s.Append(")");
+				if (newLine) { s.Append('\n'); }
+			}
+		}
+
+		private struct VariableHandler : IKeyedHandler
+		{
+			public string Name => name;
+			public string Description => description;
+			public bool Match(in CommandHandle o) => o == key;
+			public CommandHandle key;
+			public string name, description;
+			public object context;
+			public PropertyInfo property;
+			public FieldInfo field;
+
+			public void Stringify(StringBuilder s, uint indent = 1, bool newLine = true)
+			{
+				if(property == null && field == null) { return; }
+
+				for(int i = 0; i < indent; i++)
+				{
+					s.Append("  ");
+				}
+
+				s.Append(name);
+				s.Append(": ");
+				if(property != null)
+				{
+					s.Append(property.PropertyType.GetNameOrAlias());
+				}
+				else
+				{
+					s.Append(field.FieldType.GetNameOrAlias());
+				}
+
+				if (newLine) { s.Append('\n'); }
+			}
+		}
+
+		private void Remove<T>(in CommandHandle k, List<T> l)
+		where T : IKeyedHandler
+		{
+			for (var i = 0; i < l.Count; i++)
+			{
+				if (!l[i].Match(k)) { continue; }
+				l.RemoveAt(i);
+				return;
+			}
+		}
 
 		private void HandleInput(string input)
 		{
@@ -169,196 +397,281 @@ namespace Smidgenomics.Unity.Console
 			}
 		}
 
-		private void Run(in string rawInput, in CommandRequest r)
+		private int IndexOfHandler(in CommandRequest r)
 		{
-			var h = FindHandler(r);
-			if(h == null)
+			return r.type switch
 			{
-				LogUnhandled(r);
+				CommandType.MethodCall => IndexOfMethod(r),
+				CommandType.Assignment => IndexOfVariable(r),
+				_ => -1
+			};
+		}
+
+		private void LogNF(in CommandRequest r)
+		{
+			switch (r.type)
+			{
+				case CommandType.Assignment:
+					LogVariableNF(r.keyword);
+					break;
+				case CommandType.MethodCall:
+					LogMethodNF(r.keyword, r.args);
+					break;
+			}
+		}
+
+		private void Invoke(int i, in CommandRequest r)
+		{
+			switch (r.type)
+			{
+				case CommandType.MethodCall:
+					InvokeMethod(i, r);
+					break;
+				case CommandType.Assignment:
+					InvokeVariable(i, r);
+					break;
+			}
+		}
+
+		private void Run(string rawInput, in CommandRequest r)
+		{
+			var hi = IndexOfHandler(r);
+
+			if(hi < 0)
+			{
+				LogNF(r);
 				return;
 			}
-			_log.Append(rawInput, 3);
 
-			if (!h.invokeUnsafe)
+			AddLog(rawInput, 3);
+		
+			try
 			{
-				try
-				{
-					Invoke(h, r);
-				}
-				catch
-				{
-					_log.Append("Unknown error in handler", -2);
-				}
+				Invoke(hi, r);
+			}
+			catch(Exception e)
+			{
+#if SMIDGENOMICS_DEV
+				Debug.Log(e.Message);
+#endif
+				LogUnknownError();
+			}
+		}
+
+
+		private int IndexOfVariable(in CommandRequest r)
+		{
+			return IndexOfVariable(r.keyword, r.args.FirstOrDefault()?.GetType());
+		}
+
+		private int IndexOfVariable(string name, Type type)
+		{
+			if (type == null) { return -1; }
+			for (int i = 0; i < _variables.Count; i++)
+			{
+				var v = _variables[i];
+
+				var vtype =
+				v.property?.PropertyType
+				?? v.field.FieldType;
+
+				if (vtype != type) { continue; }
+				if (_variables[i].name != name) { continue; }
+				return i;
+			}
+			return -1;
+		}
+
+		private int IndexOfMethod(in CommandRequest r)
+		{
+			for (var i = 0; i < _methods.Count; i++)
+			{
+				if (MatchMethod(_methods[i], r)) { return i; }
+			}
+			return -1;
+		}
+
+		private void InvokeMethod(int i, in CommandRequest r)
+		{
+			var m = _methods[i];
+			m.method.Invoke(m.context, r.args);
+		}
+
+		private void InvokeVariable(int i, in CommandRequest r)
+		{
+			var p = _variables[i];
+			if(p.property != null)
+			{
+				p.property.SetValue(p.context, r.args[0]);
 			}
 			else
 			{
-				Invoke(h, r);
+				p.field.SetValue(p.context, r.args[0]);
 			}
 		}
 
-		private void Invoke(RuntimeHandler h, in CommandRequest r)
+		private bool MatchMethod(in MethodHandler h, in CommandRequest r)
 		{
-			h.method.Invoke(h.target, r.args);
-		}
+			if (h.method == null) { return false; }
+			if (h.name != r.keyword) { return false; }
+			if (h.parameters.Length != r.args.Length) { return false; }
 
-		private RuntimeHandler FindHandler(in CommandRequest r)
-		{
-			for(var i = 0; i < _handlers.Count; i++)
-			{
-				var h = _handlers[i];
-				if(h.name != r.keyword) { continue; }
-				if (!h.target) { continue; }
-				if (Match(_handlers[i], r)) { return _handlers[i]; }
-			}
-			return null;
-		}
-
-		private bool Match(RuntimeHandler h, in CommandRequest r)
-		{
-			if (!h.target) { return false; }
-			if(h.parameters.Length != r.args.Length) { return false; }
-
-			if(h.optionalParameters.Count > 0)
-			{
-				return false;
-			}
-
-			for(var i = 0; i < r.args.Length; i++)
+			for (var i = 0; i < r.args.Length; i++)
 			{
 				var vtype = r.args[i].GetType();
 				var ptype = h.parameters[i];
-				if(vtype != ptype) { return false; }
+				if (vtype != ptype) { return false; }
 			}
 			return true;
 		}
 
 
-		private Dictionary<string, Action> _SPECIAL_HANDLERS = null;
-
-		private Dictionary<string, Action> GetSpecialHandlers()
+		private void LogVariableNF(string name)
 		{
-			if(_SPECIAL_HANDLERS == null)
+			var msg = string.Format(LogMsg.VARIABLE_NF, name);
+			AddLog(msg, -1);
+		}
+
+		private void LogUnknownError()
+		{
+			AddLog(LogMsg.UNKNOWN_ERR, -2);
+		}
+
+		private void LogMethodNF(string name, object[] args)
+		{
+			var sb = new StringBuilder();
+			sb.Append("Not found:\n  ");
+			sb.Append(name);
+			sb.Append(' ');
+			sb.Append('(');
+			for (var i = 0; i < args.Length; i++)
 			{
-				_SPECIAL_HANDLERS = new Dictionary<string, Action>()
+				sb.Append(args[0].GetType().GetNameOrAlias());
+				if (i < args.Length - 1)
 				{
-					{ Keyword.CLEAR, _log.Clear },
-					{ Keyword.LIST, ListHandlers },
-					{ "hedy", HL },
-					{ "Application.Quit",() =>
-					{
-						if (Application.isEditor)
-						{
-							#if UNITY_EDITOR
-							UnityEditor.EditorApplication.isPlaying = false;
-							return;
-							#endif
-						}
-						Application.Quit();
-					} }
-				};
+					sb.Append(',');
+				}
 			}
-			return _SPECIAL_HANDLERS;
+			sb.Append(')');
+			AddLog(sb.ToString(), -1);
 		}
 
 
-		private Action FindSpecialHandler(in string input)
+		private void Inspect(string name)
 		{
-			var shandlers = GetSpecialHandlers();
-			return shandlers.TryGetValue(input, out var fn) ? fn : null;
+			var i = IndexOf(name, _variables);
+
+			if(i < 0)
+			{
+				LogVariableNF(name);
+				return;
+			}
+
+			try
+			{
+				var variable = _variables[i];
+
+				var v = variable.property != null
+				? variable.property.GetValue(variable.context)
+				: variable.field.GetValue(variable.context);
+				AddLog(v.ToString());
+			}
+			catch { }
 		}
 
-		private void HL() => _log.Append("<b>IT'S HEDLEY!</b>");
+		private int IndexOf<T>(string name, List<T> l) where T : IKeyedHandler
+		{
+			for (var i = 0; i < l.Count; i++)
+			{
+				if (l[i].Name == name) { return i; }
+			}
+			return -1;
+		}
+
+		private void SortByName<T>(List<T> l) where T : IKeyedHandler
+		{
+			l.Sort(SortByName);
+		}
+
+		private int SortByName<T>(T a, T b) where T : IKeyedHandler
+		{
+			return a.Name.CompareTo(b.Name);
+		}
+
+		private void Describe(string name)
+		{
+			var i = IndexOf(name, _variables);
+
+			if (i > -1)
+			{
+				AddLog(_variables[i].description);
+				return;
+			}
+
+			i = IndexOf(name, _methods);
+
+			if(i > -1)
+			{
+				AddLog(_methods[i].description);
+				return;
+			}
+
+			AddLog($"Unknown command: '{name}'", -1);
+		}
+
+		private void ListHandlers(string filter)
+		{
+			var s = new StringBuilder();
+			StringifyHandlers(s, h => h.Name.IsMatch(filter));
+			_log.Append(s.ToString(), 1);
+		}
 
 		private void ListHandlers()
 		{
 			var s = new StringBuilder();
-
-			s.Append("Global:\n");
-
-			var shandlers = GetSpecialHandlers();
-
-			foreach(var sh in shandlers)
-			{
-				s.Append("  ");
-				s.Append(sh.Key);
-				s.Append(" <- []");
-				s.Append("\n");
-			}
-
-			s.Append("Scene(s):\n");
-
-			if(_handlers.Count == 0)
-			{
-				_log.Append("No handlers", 1);
-			}
-
-			{
-				var hi = 0;
-				foreach (var h in _handlers)
-				{
-					s.Append("  ");
-					s.Append(h.name);
-					s.Append(" <- [");
-
-					var pi = 0;
-					foreach (var p in h.parameters)
-					{
-						s.Append(GetLabel(p));
-						if (pi < h.parameters.Length - 1)
-						{
-							s.Append(", ");
-						}
-						pi++;
-					}
-					s.Append("]");
-					if (hi < _handlers.Count - 1)
-					{
-						s.Append("\n");
-					}
-					hi++;
-				}
-			}
-			
-
-
+			StringifyHandlers(s);
 			_log.Append(s.ToString(), 1);
 		}
-		private void LogUnhandled(in CommandRequest r)
-		{
-			var s = new StringBuilder();
-			s.Append(r.keyword);
 
-			if(r.args.Length > 0)
+		private void StringifyHandlers
+		(
+			StringBuilder s,
+			Func<IKeyedHandler, bool> filter = null
+		)
+		{
+			var vs = new StringBuilder();
+			vs.AppendLine("Variables");
+			var vcount = 0;
+			foreach (var p in _variables)
 			{
-				s.Append(": [");
-				for (var i = 0; i < r.args.Length; i++)
-				{
-					s.Append(GetLabel(r.args[i].GetType()));
-					if(i < r.args.Length - 1)
-					{
-						s.Append(", ");
-					}
-				}
-				s.Append("]");
+				if(filter != null && !filter.Invoke(p)) { continue; }
+				vcount++;
+				p.Stringify(vs);
 			}
-			_log.Append($"No handler found:\n  {s}", -1);
-		}
-		private static string GetLabel(Type t)
-		{
-			if(t == typeof(int)) { return "int"; }
-			if(t == typeof(string)) { return "string"; }
-			if(t == typeof(bool)) { return "bool"; }
-			if(t == typeof(float)) { return "float"; }
-			return t.Name;
-		}
+			
+			if(vcount > 0)
+			{
+				s.Append(vs);
+			}
 
-		private static class Keyword
-		{
-			public const string
-			LIST = "list",
-			CLEAR = "clear";
-		}
+			var ms = new StringBuilder();
+			ms.AppendLine("Methods");
+			var mcount = 0;
+			foreach (var m in _methods)
+			{
+				if (filter != null && !filter.Invoke(m)) { continue; }
+				mcount++;
+				m.Stringify(ms);
+			}
+			if (mcount > 0)
+			{
+				s.Append(ms);
+			}
 
-	
+			if(mcount == 0 && vcount == 0)
+			{
+				s.AppendLine(LogMsg.NO_RESULTS);
+			}
+		}
 	}
 }

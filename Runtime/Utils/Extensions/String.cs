@@ -12,12 +12,12 @@ namespace Smidgenomics.Unity.Console
 		}
 		public static string ToRichBold(this string s)
 		{
-			return s.ToHTMLTagged("b");
+			return s.ToHTMLTagged('b');
 		}
 
 		public static string ToRichItalic(this string s)
 		{
-			return s.ToHTMLTagged("i");
+			return s.ToHTMLTagged('i');
 		}
 
 		public static string ToDurationString(this int seconds)
@@ -86,6 +86,11 @@ namespace Smidgenomics.Unity.Console
 		}
 
 		private static string ToHTMLTagged(this string v, string t)
+		{
+			return $"<{t}>{v}</{t}>";
+		}
+
+		private static string ToHTMLTagged(this string v, char t)
 		{
 			return $"<{t}>{v}</{t}>";
 		}
