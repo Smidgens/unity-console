@@ -8,18 +8,16 @@ namespace Smidgenomics.Unity.Console
 	using System.Text;
 	using System.Collections.Generic;
 
+
 #if !CONSOLE_DISABLE_CM
 	[CreateAssetMenu(menuName = Config.CreateAssetMenu.CONSOLE)]
 #endif
-	public class Console : ScriptableObject, IConsole
+	internal class Console : ScriptableObject, IConsole
 	{
-		public const string INIT_MSG = "Console initialized";
-
-		public event Action logCleared = null;
-
 		public static class LogMsg
 		{
 			public const string
+			INIT_MSG = "Console initialized",
 			NO_RESULTS = "No results",
 			VARIABLES = "Variables",
 			METHODS = "Methods",
@@ -34,7 +32,6 @@ namespace Smidgenomics.Unity.Console
 		public void Clear()
 		{
 			_log.Clear();
-			logCleared?.Invoke();
 		}
 
 		public void Process(string input)
@@ -69,16 +66,16 @@ namespace Smidgenomics.Unity.Console
 			switch (mi.MemberType)
 			{
 				case MemberTypes.Method:
-					return AddCommand(name, mi as MethodInfo, context, description);
+					return AddMethod(name, mi as MethodInfo, context, description);
 				case MemberTypes.Property:
-					return AddCommand(name, mi as PropertyInfo, context, description);
+					return AddProperty(name, mi as PropertyInfo, context, description);
 				case MemberTypes.Field:
-					return AddCommand(name, mi as FieldInfo, context, description);
+					return AddField(name, mi as FieldInfo, context, description);
 			}
 			return default;
 		}
 
-		internal CommandHandle AddCommand
+		internal CommandHandle AddField
 		(
 			string name,
 			FieldInfo field,
@@ -108,11 +105,10 @@ namespace Smidgenomics.Unity.Console
 			};
 			_htypes[key] = HandlerType.Prop;
 			_variables.Add(item);
-
 			return key;
 		}
 
-		internal CommandHandle AddCommand
+		internal CommandHandle AddProperty
 		(
 			string name,
 			PropertyInfo property,
@@ -120,12 +116,12 @@ namespace Smidgenomics.Unity.Console
 			string description = ""
 		)
 		{
-			if (!ConsoleReflection.IsConsoleUsable(property.PropertyType))
-			{
-				return KeyGen.Empty;
-			}
+			var err = ValidateProperty(property, context);
 
-			if (!property.IsReadWrite()) { return KeyGen.Empty; }
+			if(err != null)
+			{
+				throw new ConsoleException(err);
+			}
 
 			var key = _keys.Next();
 
@@ -143,7 +139,7 @@ namespace Smidgenomics.Unity.Console
 			return key;
 		}
 
-		internal CommandHandle AddCommand
+		internal CommandHandle AddMethod
 		(
 			string name,
 			MethodInfo method,
@@ -155,23 +151,28 @@ namespace Smidgenomics.Unity.Console
 
 			if (!string.IsNullOrEmpty(err))
 			{
-#if UNITY_EDITOR
-				Debug.LogError(err);
-#endif
-				return KeyGen.Empty;
+				throw new ConsoleException(err);
 			}
 
 			var parameters = method.GetParameters();
-			var required = new List<Type>();
-			var optional = new Dictionary<string, Type>();
 			var invalid = false;
 
 			foreach (var p in parameters)
 			{
 				invalid = !ConsoleReflection.IsConsoleUsable(p);
-
 				if (invalid) { break; }
+			}
 
+			if (invalid)
+			{
+				throw new ConsoleException("Method invalid");
+			}
+
+			var required = new List<Type>();
+			var optional = new Dictionary<string, Type>();
+
+			foreach (var p in parameters)
+			{
 				if (p.IsOptional)
 				{
 					optional[p.Name] = p.ParameterType;
@@ -180,14 +181,6 @@ namespace Smidgenomics.Unity.Console
 				{
 					required.Add(p.ParameterType);
 				}
-			}
-
-			if (invalid)
-			{
-#if UNITY_EDITOR
-				Debug.LogError($"Invalid handler: '{method.Name}'");
-#endif
-				return KeyGen.Empty;
 			}
 
 			var key = _keys.Next();
@@ -234,7 +227,13 @@ namespace Smidgenomics.Unity.Console
 		private static InitFn _initFn = InitStart;
 
 		private readonly OutputLog _log = new OutputLog();
-		private KeyGen _keys = new KeyGen();
+		private HandleFactory _keys = new HandleFactory();
+
+		internal struct HandleFactory
+		{
+			public CommandHandle Next() => new CommandHandle(++_current);
+			private uint _current;
+		}
 
 		private enum HandlerType { Method, Prop, Field }
 
@@ -242,7 +241,7 @@ namespace Smidgenomics.Unity.Console
 		{
 			c.InitDefaultHandlers();
 			c.InitAttributeHandlers();
-			c.AddLog(INIT_MSG, 1);
+			c.AddLog(LogMsg.INIT_MSG, 1);
 			_initFn = NoOp.Action.A1;
 		}
 
@@ -266,6 +265,55 @@ namespace Smidgenomics.Unity.Console
 			c.AddCommand(Keyword.LIST, listFilter.Method, this);
 			c.AddCommand(Keyword.HELP, help.Method, this);
 			c.AddCommand(Keyword.INSPECT, inspect.Method, this);
+		}
+
+		private static string Validate(FieldInfo f, object ctx)
+		{
+			if (f.IsInitOnly)
+			{
+				return "Static field must support read/write";
+			}
+
+			if (f.IsStatic && ctx != null)
+			{
+				return "Cannot bind static field with context";
+			}
+			if (!f.IsStatic && ctx == null)
+			{
+				return "Cannot bind instance field without context";
+			}
+			return null;
+		}
+
+		private static string ValidateProperty(PropertyInfo p, object ctx)
+		{
+			if (!ConsoleReflection.IsConsoleUsable(p.PropertyType))
+			{
+				throw new ConsoleException("Property type not supported");
+			}
+
+			if (!p.IsReadWrite())
+			{
+				throw new ConsoleException("Property should support read/write");
+			}
+
+			var setter = p.SetMethod;
+
+			if (setter.IsStatic && ctx != null)
+			{
+				return "Cannot bind static property with context";
+			}
+			if (!setter.IsStatic && ctx == null)
+			{
+				return "Cannot bind instance property without context";
+			}
+
+			if (!setter.IsStatic && ctx.GetType() != setter.ReflectedType)
+			{
+				return "Cannot bind property with context of different type";
+			}
+
+			return null;
 		}
 
 		private static string ValidateMethod(MethodInfo m, object ctx)
@@ -318,11 +366,9 @@ namespace Smidgenomics.Unity.Console
 				{
 					s.Append("  ");
 				}
-
 				s.Append(name);
 				s.Append(" (");
 				var pi = 0;
-
 				foreach (var p in parameters)
 				{
 					s.Append(p.GetNameOrAlias());
@@ -356,7 +402,6 @@ namespace Smidgenomics.Unity.Console
 				{
 					s.Append("  ");
 				}
-
 				s.Append(name);
 				s.Append(": ");
 				if(property != null)
@@ -640,7 +685,7 @@ namespace Smidgenomics.Unity.Console
 		)
 		{
 			var vs = new StringBuilder();
-			vs.AppendLine("Variables");
+			vs.AppendLine(LogMsg.VARIABLES);
 			var vcount = 0;
 			foreach (var p in _variables)
 			{
@@ -648,14 +693,14 @@ namespace Smidgenomics.Unity.Console
 				vcount++;
 				p.Stringify(vs);
 			}
-			
+
 			if(vcount > 0)
 			{
 				s.Append(vs);
 			}
 
 			var ms = new StringBuilder();
-			ms.AppendLine("Methods");
+			ms.AppendLine(LogMsg.METHODS);
 			var mcount = 0;
 			foreach (var m in _methods)
 			{

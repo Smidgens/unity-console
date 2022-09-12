@@ -4,13 +4,6 @@ namespace Smidgenomics.Unity.Console
 {
 	using System;
 
-	internal struct KeyGen
-	{
-		public static CommandHandle Empty => default;
-		public CommandHandle Next() => new CommandHandle(++_current);
-		private uint _current;
-	}
-
 	/// <summary>
 	/// Reference to bound console handler
 	/// </summary>

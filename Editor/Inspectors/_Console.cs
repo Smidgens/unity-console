@@ -8,6 +8,6 @@ namespace Smidgenomics.Unity.Console.Editor
 	[CustomEditor(typeof(Console))]
 	internal class _Console : _Base
 	{
-	
+		
 	}
 }

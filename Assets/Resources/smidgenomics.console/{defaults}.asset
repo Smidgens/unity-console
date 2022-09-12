@@ -70,7 +70,7 @@ MonoBehaviour:
         m_Bottom: 0
       m_Font: {fileID: 12800000, guid: eb5cac061c5ecf74b9b1661771421840, type: 3}
       m_FontSize: 11
-      m_FontStyle: 1
+      m_FontStyle: 0
       m_Alignment: 0
       m_WordWrap: 1
       m_RichText: 1

@@ -81,7 +81,7 @@ namespace Smidgenomics.Unity.Console
 		}
 	}
 
-	internal struct FixedArray4<T> : IFixedArray<T> where T : struct
+	internal struct FixedArray4<T> : IFixedArray<T>
 	{
 		public int Length => 4;
 
@@ -91,7 +91,7 @@ namespace Smidgenomics.Unity.Console
 			set => SetAt(i, value);
 		}
 
-		public FixedArray4(T v0, T v1, T v2, T v3)
+		public FixedArray4(T v0 = default, T v1 = default, T v2 = default, T v3 = default)
 		{
 			_val = (v0, v1, v2, v3);
 		}

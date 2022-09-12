@@ -4,9 +4,9 @@ namespace Smidgenomics.Unity.Console
 {
 	using System;
 
-	internal class CommandBindException : Exception
+	internal class ConsoleException : Exception
 	{
-		public CommandBindException() { }
-		public CommandBindException(string msg) : base(msg) { } 
+		public ConsoleException() { }
+		public ConsoleException(string msg) : base(msg) { } 
 	}
 }

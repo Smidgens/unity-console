@@ -4,6 +4,15 @@ namespace Smidgenomics.Unity.Console
 {
 	using UnityEngine;
 	using System;
+	using System.Collections.Generic;
+
+	public interface IConsoleWidget
+	{
+		public int Order { get; }
+		public bool Enabled { get; }
+		public float GetWidth(float height);
+		public void OnWidgetGUI(in Rect pos);
+	}
 
 	[AddComponentMenu(Config.AddComponentMenu.CONSOLE_GUI)]
 	internal partial class ConsoleGUI : MonoBehaviour
@@ -11,7 +20,10 @@ namespace Smidgenomics.Unity.Console
 		public const double AREA_PADDING = 2.0;
 		public const float INPUT_AREA_HEIGHT = 30f;
 		public const float TOOLBAR_HEIGHT = 25f;
+		public const float AUTO_SCROLL_THRESHOLD = 50f;
+
 		public readonly static Color BORDER_COLOR = Color.black * 1f;
+		public readonly static Color SCROLL_COLOR = Color.black * 0.5f;
 
 		public void Draw()
 		{
@@ -34,10 +46,7 @@ namespace Smidgenomics.Unity.Console
 			this.SetTimeout(delay, FocusInputImmediate);
 		}
 
-		private void FocusInputImmediate()
-		{
-			_activeFocus = _inputId;
-		}
+		private void FocusInputImmediate() => _activeFocus = _inputId;
 
 		public void ClearFocus()
 		{
@@ -52,8 +61,11 @@ namespace Smidgenomics.Unity.Console
 		[SerializeField] private ConsoleTheme _themeOverride = default;
 		[SerializeField] private bool _manualMode = false;
 
-		private static readonly ILazy<ConsoleDefaults> _RESOURCES = LazyValue.Get(ConsoleDefaults.GetInstance);
-		private static readonly ILazy<ConsoleStyles> _STYLES = LazyValue.Get(GetStyles);
+		private static readonly ILazy<ConsoleResources>
+		_RESOURCES = LazyValue.Get(ConsoleResources.GetInstance);
+
+		private static readonly ILazy<ConsoleStyles>
+		_STYLES = LazyValue.Get(GetStyles);
 
 		private ConsoleTheme _Theme => _themeOverride ?? _RESOURCES.Value.Theme;
 		private InputHistory _inputLog = new InputHistory();
@@ -65,8 +77,35 @@ namespace Smidgenomics.Unity.Console
 		private string _activeFocus = null;
 		private Action _guiFn = NoOp.Action.A0;
 
+		private List<IConsoleWidget> _toolbarWidgets = new List<IConsoleWidget>();
+		//private SortedList<int, IConsoleWidget> _toolbarWidgets = new SortedList<int, IConsoleWidget>();
+
+		private static class ErrMsg
+		{
+			public const string
+			MISSING_RESOURCES = "Missing required Console Resources",
+			MISSING_CONSOLE = "Missing reference to Console";
+		}
+
+		private readonly struct ConsoleStyles
+		{
+			public readonly GUIStyle text, input, date;
+			public ConsoleStyles(GUIStyle t, GUIStyle i, GUIStyle d)
+			{
+				text = t;
+				input = i;
+				date = d;
+			}
+		}
+
 		private void Awake()
 		{
+			foreach(var w in GetComponentsInChildren<IConsoleWidget>())
+			{
+				_toolbarWidgets.Add(w);
+			}
+			_toolbarWidgets.Sort(CompareWidgetOrder);
+
 			_items = new ItemGUI();
 			_items.console = _console;
 
@@ -84,14 +123,14 @@ namespace Smidgenomics.Unity.Console
 			if (!_RESOURCES.Value)
 			{
 				enabled = false;
-				Debug.Log($"{nameof(ConsoleGUI)}: Missing required Console Resources");
+				Debug.Log(ErrMsg.MISSING_RESOURCES);
 				return;
 			}
 
 			if (!_console || !_Theme)
 			{
 				enabled = false;
-				Debug.Log($"{nameof(ConsoleGUI)}: Missing ref to Console or Theme");
+				Debug.Log(ErrMsg.MISSING_CONSOLE);
 				return;
 			}
 			FocusInput();
@@ -99,18 +138,12 @@ namespace Smidgenomics.Unity.Console
 
 		private void OnGUI()
 		{
-			OnDraw();
+			_guiFn.Invoke();
 		}
 
-		private readonly struct ConsoleStyles
+		private static int CompareWidgetOrder(IConsoleWidget a, IConsoleWidget b)
 		{
-			public readonly GUIStyle text, input, date;
-			public ConsoleStyles(GUIStyle t, GUIStyle i, GUIStyle d)
-			{
-				text = t;
-				input = i;
-				date = d;
-			}
+			return a.Order.CompareTo(b.Order);
 		}
 
 		private static ConsoleStyles GetStyles()
@@ -135,13 +168,12 @@ namespace Smidgenomics.Unity.Console
 
 			_layout.Update();
 			_items.theme = _Theme;
-
 			// draw handlers
 			DrawBackground(_layout.Window);
-
 			DrawToolbar(_layout.Toolbar);
 			DrawViewport(_layout.Viewport);
 			DrawInput(_layout.Input);
+			DrawScrollbar(_scroll, _layout.Viewport);
 
 			BorderGUI.BorderTop(_layout.Viewport, BORDER_COLOR);
 			BorderGUI.BorderTop(_layout.Input, BORDER_COLOR);
@@ -149,7 +181,7 @@ namespace Smidgenomics.Unity.Console
 
 		private void DrawBackground(in Rect pos)
 		{
-			CGUI.Draw(pos, _Theme.BackgroundColor);
+			CGUI.Color(pos, _Theme.BackgroundColor);
 		}
 
 		private void DrawViewport(in Rect pos)
@@ -164,13 +196,45 @@ namespace Smidgenomics.Unity.Console
 
 		private void DrawToolbar(in Rect pos)
 		{
-			//GUIHelper.DrawRect(pos, _headerColor);
+			var area = pos;
+			foreach(var widget in _toolbarWidgets)
+			{
+				if (!widget.Enabled) { continue; }
+				var w = widget.GetWidth(pos.height);
+				var r = area.SliceRight(w);
+				widget.OnWidgetGUI(r);
+				BorderGUI.BorderLeft(r, BORDER_COLOR);
+			}
 		}
 
+		private const string _INPUT_PREFIX = ">";
 		private void DrawInput(in Rect pos)
 		{
+			var area = pos;
+			var ico = area.SliceLeft(area.height * 0.8f);
+			GUI.Label(ico, _INPUT_PREFIX, _STYLES.Value.input);
 			GUI.SetNextControlName(_inputId);
-			_inputValue = GUI.TextField(pos, _inputValue, _STYLES.Value.input);
+			_inputValue = GUI.TextField(area, _inputValue, _STYLES.Value.input);
+		}
+	
+		private void DrawScrollbar(in Vector2 scroll, in Rect pos)
+		{
+			var r = pos;
+			var barArea = r.SliceRight(5f);
+
+			var th = _items.TotalHeight;
+
+			BorderGUI.BorderLeft(barArea, BORDER_COLOR);
+			if(th < pos.height)
+			{
+				return;
+			}
+			var ts = scroll.y / th;
+			var t = pos.height / th;
+			var knob = barArea;
+			knob.height *= t;
+			knob.y += ts * pos.height;
+			CGUI.Color(knob, SCROLL_COLOR);
 		}
 
 		private void CycleInputs(int direction)
@@ -196,7 +260,7 @@ namespace Smidgenomics.Unity.Console
 			if(_inputValue.Length == 0) { return; }
 			var v = _inputValue.Trim();
 			if (v.Length == 0) { return; }
-			_inputValue = "";
+			_inputValue = string.Empty;
 			_inputLog.Append(v);
 			ScrollBottom();
 			_console.Process(v);
@@ -291,8 +355,8 @@ namespace Smidgenomics.Unity.Console
 			{
 				public float max => height + offset;
 				public float height, offset;
-				public string time;
 				public uint logId;
+				public string time;
 			}
 
 			private void OnBeforeDraw(in Vector2 size)
@@ -332,10 +396,9 @@ namespace Smidgenomics.Unity.Console
 
 			private float GetTotalHeight()
 			{
-				if (console.Log.Length == 0) { return 0f; }
-				var i = console.Log.Length - 1;
-				if (i < 0 || i >= _items.Count) { return 0f; }
-				return _items[i].max;
+				var n = Mathf.Min(console.Log.Length, _items.Count);
+				if(n == 0) { return 0f; }
+				return _items[n - 1].max;
 			}
 
 			private void EnsureLength()
@@ -373,7 +436,6 @@ namespace Smidgenomics.Unity.Console
 					var item = _items[i];
 					item.height = h;
 					item.offset = y;
-
 					if (item.logId != _logID)
 					{
 						item.time = litem.Time.ToLogTime();

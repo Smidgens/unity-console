@@ -8,6 +8,7 @@ namespace Smidgenomics.Unity.Console
 	{
 		public static void Pad(this ref Rect r, float p) => r.Pad(p, p, p, p);
 		public static void Pad(this ref Rect r, float h, float v) => r.Pad(h, h, v, v);
+
 		public static void Pad(this ref Rect rect, float l, float r, float t, float b)
 		{
 			var nr = rect;
@@ -23,7 +24,6 @@ namespace Smidgenomics.Unity.Console
 			r2.height = s;
 			r.height -= s;
 			r.position += new Vector2(0f, s);
-
 			return r2;
 		}
 
@@ -45,6 +45,37 @@ namespace Smidgenomics.Unity.Console
 			return r2;
 		}
 
+		public static Rect SliceX(this ref Rect r, in float s)
+		{
+			return s < 0f
+			? r.SliceLeft(s * -1f)
+			: r.SliceRight(s);
+		}
+
+		public static Rect SliceY(this ref Rect r, in float s)
+		{
+			return s < 0f
+			? r.SliceTop(s * -1f)
+			: r.SliceBottom(s);
+		}
+
+		public static Rect MinSize(this Rect r)
+		{
+			var min = Mathf.Min(r.width, r.height);
+			r.size = new Vector2(min, min);
+			return r;
+		}
+
+		public static Rect SliceMin(this ref Rect r)
+		{
+			if (r.width < r.height)
+			{
+				return r.SliceTop(r.width);
+			}
+			return r.SliceLeft(r.height);
+		}
+
+
 		public static Rect SliceRight(this ref Rect r, in float w)
 		{
 			var r2 = r;
@@ -54,7 +85,12 @@ namespace Smidgenomics.Unity.Console
 			return r2;
 		}
 
-		public static Rect Resize(this Rect r, float s)
+		public static void Resize(this ref Rect r, in float s)
+		{
+			r = Resized(r, s);
+		}
+
+		public static Rect Resized(this Rect r, in float s)
 		{
 			var c = r.center;
 			r.width += s * 2f;
@@ -63,7 +99,7 @@ namespace Smidgenomics.Unity.Console
 			return r;
 		}
 
-		public static Rect Resize(this Rect r, float sx, float sy)
+		public static Rect Resized(this Rect r, float sx, float sy)
 		{
 			var c = r.center;
 			r.width += sx * 2f;

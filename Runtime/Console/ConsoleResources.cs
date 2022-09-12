@@ -8,16 +8,16 @@ namespace Smidgenomics.Unity.Console
 #if SMIDGENOMICS_DEV
 	[CreateAssetMenu(menuName = "Console/Resources")]
 #endif
-	internal class ConsoleDefaults : ScriptableObject
+	internal class ConsoleResources : ScriptableObject
 	{
-		public static ConsoleDefaults Instance => GetInstance();
+		public static ConsoleResources Instance => GetInstance();
 
-		public static ConsoleDefaults GetInstance()
+		public static ConsoleResources GetInstance()
 		{
 			var (instance, init) = _cache;
 			if (init) { return instance; }
 			var path = Config.ResourcePath.DEFAULTS;
-			instance = Resources.Load<ConsoleDefaults>(path);
+			instance = Resources.Load<ConsoleResources>(path);
 			_cache = (instance, true);
 			return instance;
 		}
@@ -34,6 +34,9 @@ namespace Smidgenomics.Unity.Console
 		[SerializeField] ConsoleTheme _theme = default;
 		[SerializeField] DefaultStyles _styles = default;
 
-		private static (ConsoleDefaults, bool) _cache = default;
+		private static (ConsoleResources, bool) _cache = default;
+
+
+
 	}
 }

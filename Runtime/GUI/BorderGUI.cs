@@ -6,30 +6,37 @@ namespace Smidgenomics.Unity.Console
 
 	internal static class BorderGUI
 	{
-		public static void Border(in Rect pos, in Color c)
+		public static void Border(in Rect pos, in Color c, in float w = 1f)
 		{
-			var w = 1f;
-			var hl = pos;
-			hl.width = w;
-			var vl = pos;
-			vl.height = w;
-			var l0 = hl;
-			var l1 = hl;
-			l1.position += new Vector2(pos.width - w, 0f);
-			var l2 = vl;
-			var l3 = vl;
-			l3.position += new Vector2(0f, pos.height - w);
-			CGUI.Draw(l0, c);
-			CGUI.Draw(l1, c);
-			CGUI.Draw(l2, c);
-			CGUI.Draw(l3, c);
+			var br = pos;
+			CGUI.Color(br.SliceLeft(w), c);
+			CGUI.Color(br.SliceRight(w), c);
+			CGUI.Color(br.SliceTop(w), c);
+			CGUI.Color(br.SliceBottom(w), c);
 		}
 
-		public static void BorderTop(in Rect pos, in Color c)
+		public static void BorderTop(in Rect pos, in Color c, in float w = 1f)
 		{
-			var div = pos;
-			div.height = 1f;
-			CGUI.Draw(div, c);
+			var br = pos;
+			CGUI.Color(br.SliceTop(w), c);
+		}
+
+		public static void BorderLeft(in Rect pos, in Color c, in float w = 1f)
+		{
+			var br = pos;
+			CGUI.Color(br.SliceLeft(w), c);
+		}
+
+		public static void BorderRight(in Rect pos, in Color c, in float w = 1f)
+		{
+			var br = pos;
+			CGUI.Color(br.SliceRight(w), c);
+		}
+
+		public static void BorderBottom(in Rect pos, in Color c, in float w = 1f)
+		{
+			var br = pos;
+			CGUI.Color(br.SliceBottom(w), c);
 		}
 	}
 }

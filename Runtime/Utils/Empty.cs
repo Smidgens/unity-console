@@ -8,5 +8,11 @@ namespace Smidgenomics.Unity.Console
 		{
 			return new T();
 		}
+
+		public static class Array
+		{
+			public readonly static string[] STRING = { };
+			public readonly static int[] INT = { };
+		}
 	}
 }
