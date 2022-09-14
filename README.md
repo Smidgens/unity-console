@@ -2,9 +2,9 @@
 ![](/.github/gallery.png?raw=true "")
 
 
-## ℹ️ Features
+# ℹ️ Features
 
-* Reflection-based runtime console for Unity projects.
+* Reflection-based in-game console.
 * No extras required - usable with existing code and wireable through inspector.
 * Bind handlers for scene objects or project assets.
 * Supports input and parsing of all primitive type arguments + common Unity structs (`Vector2/3/4`, `Color`...).
@@ -16,22 +16,29 @@
 
 **⌛ In Progress**
 
-* [ ] Static methods and fields.
-* [ ] Optional method parameters
-* [ ] Automatic type casting for compatible types (float -> double...)
+* [ ] Command help hints, displayable in GUI window through help command.
+* [ ] Bind static methods and fields to console, globally or per scene.
+* [ ] Automatically register commands through Command (static methods) and ConfigVar (static field) attributes.
+
+**Planned**
+
+* [ ] Optional arguments (C# method arguments with default values).
+* [ ] Automatic type casting for compatible types (float -> double...).
 * [ ] Custom input parsers and type handlers.
+* [ ] Automatic binding of static methods and fields that match configured criteria.
 
 <br/>
 
-## 📦 Install
+# 📦 Install
 
 1. Open Package Manager
-2. Paste git URL (`<github_url>#<tag>`)
+2. Paste GitHub URL:\
+`https://github.com/Smidgens/unity-console.git#<version_tag>`
 
 
 <br/>
 
-## 🚀 Use
+# 🚀 Use
 
 
 1. Create a `Console` asset in your project.
