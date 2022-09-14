@@ -13,17 +13,11 @@
 <br/>
 
 
-**⌛ In Progress**
+**⌛ In Progress **
 
-* [ ] Command help hints, displayable in GUI window through help command.
-* [ ] Bind static methods and fields to console, globally or per scene.
-* [ ] Automatically register commands through Command (static methods) and ConfigVar (static field) attributes.
-
-**Planned**
-
-* [ ] Optional arguments (C# method arguments with default values).
-* [ ] Automatic type casting for compatible types (float -> double...).
-* [ ] Custom input parsers and type handlers.
+* [ ] Optional method arguments.
+* [ ] Support implicit type casting for arguments when available (float -> double etc.)
+* [ ] Support custom input parsers to handle custom types as command arguments.
 
 <br/>
 
