@@ -13,9 +13,9 @@
 <br/>
 
 
-**⌛ In Progress **
+**⌛ In Progress**
 
-* [ ] Optional method arguments.
+* [ ] Support binding methods with optional parameters.
 * [ ] Support implicit type casting for arguments when available (float -> double etc.)
 * [ ] Support custom input parsers to handle custom types as command arguments.
 
