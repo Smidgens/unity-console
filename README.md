@@ -6,9 +6,8 @@
 
 * Reflection-based in-game console.
 * No extras required - usable with existing code and wireable through inspector.
-* Bind handlers for scene objects or project assets.
-* Supports input and parsing of all primitive type arguments + common Unity structs (`Vector2/3/4`, `Color`...).
-* Supports multiple input forms (`fn(x)`, `fn x`, `variable=x`)
+* Bind commands to methods, fields, or properties.
+* Includes input and parsing of standard primitive types + common Unity structs (`Vector2/3/4`, `Color`...).
 * Minimalistic and functional UI (Unity IMGUI).
 * 🤞 Reasonably lightweight.
 <br/>
@@ -25,7 +24,6 @@
 * [ ] Optional arguments (C# method arguments with default values).
 * [ ] Automatic type casting for compatible types (float -> double...).
 * [ ] Custom input parsers and type handlers.
-* [ ] Automatic binding of static methods and fields that match configured criteria.
 
 <br/>
 
@@ -43,6 +41,6 @@
 
 1. Create a `Console` asset in your project.
 2. Add a `Console GUI` script to your scene and drop a reference to the asset into it.
-3. Use `Console Handler` script to bind commands to scene objects.
+3. Use `Console Commands` script to bind commands to scene objects.
 
 
