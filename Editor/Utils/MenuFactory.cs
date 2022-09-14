@@ -106,7 +106,7 @@ namespace Smidgenomics.Unity.Console.Editor
 				{
 					return false;
 				}
-				return ConsoleReflection.IsConsoleUsable(m);
+				return CSupport.IsConsoleUsable(m);
 			})
 			.OrderBy(x => !x.IsSpecialName)
 			.ThenByDescending(x => x.GetAccessLevel())

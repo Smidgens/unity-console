@@ -9,8 +9,13 @@ namespace Smidgenomics.Unity.Console
 
 	internal static class ConsoleHelper
 	{
-		public static List<CommandHandle> FindAttributes(IConsole c, AttributeSearchScope opts = default)
+		public static List<CommandHandle> FindCommandAttributes
+		(
+			IConsole c,
+			AttributeSearchScope opts = default
+		)
 		{
+
 			var filter = opts == AttributeSearchScope.Explicit;
 			var assemblies = filter
 			? AttributeHelper.Assemblies<ConsoleAssembly>()
@@ -44,15 +49,15 @@ namespace Smidgenomics.Unity.Console
 
 					if (scope && cclass != null)
 					{
-						scopePrefix = !string.IsNullOrEmpty(cclass.displayName)
-						? cclass.displayName
+						scopePrefix = !string.IsNullOrEmpty(cclass.scopeName)
+						? cclass.scopeName
 						: t.Name;
 					}
 
 
-					if(!string.IsNullOrEmpty(cclass?.displayName))
+					if(!string.IsNullOrEmpty(cclass?.scopeName))
 					{
-						scopePrefix = cclass.displayName;
+						scopePrefix = cclass.scopeName;
 					}
 
 					var fields = FindFields(t, cclass);
@@ -73,7 +78,7 @@ namespace Smidgenomics.Unity.Console
 							name = $"{scopePrefix}.{name}";
 						}
 
-						var h = c.AddCommand(name, m, null, description);
+						var h = c.Add(name, m, null, description);
 						handles.Add(h);
 					}
 				}
@@ -94,7 +99,7 @@ namespace Smidgenomics.Unity.Console
 			{
 				if (m.IsSpecialName) { continue; }
 
-				if (!ConsoleReflection.IsConsoleUsable(m))
+				if (!CSupport.IsConsoleUsable(m))
 				{
 					continue;
 				}
@@ -104,7 +109,7 @@ namespace Smidgenomics.Unity.Console
 			}
 			foreach (var p in t.GetProperties(RFlags.ANY_STATIC_MEMBER))
 			{
-				if (!ConsoleReflection.IsConsoleUsable(p.PropertyType))
+				if (!CSupport.IsConsoleUsable(p.PropertyType))
 				{
 					continue;
 				}
@@ -113,14 +118,16 @@ namespace Smidgenomics.Unity.Console
 			}
 			foreach (var f in t.GetFields(RFlags.ANY_STATIC_MEMBER))
 			{
-				if (!ConsoleReflection.IsConsoleUsable(f.FieldType))
-				{
-					continue;
-				}
 				if (f.IsDefined(typeof(CompilerGen)))
 				{
 					continue;
 				}
+
+				if (!CSupport.IsConsoleUsable(f.FieldType))
+				{
+					continue;
+				}
+				
 				if (f.IsDefined(typeof(HideInConsoleAttribute))) { continue; }
 				l.Add(f);
 			}

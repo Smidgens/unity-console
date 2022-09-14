@@ -59,8 +59,8 @@ MonoBehaviour:
         m_Top: 4
         m_Bottom: 4
       m_Padding:
-        m_Left: 5
-        m_Right: 5
+        m_Left: 2
+        m_Right: 0
         m_Top: 2
         m_Bottom: 2
       m_Overflow:
@@ -69,7 +69,7 @@ MonoBehaviour:
         m_Top: 0
         m_Bottom: 0
       m_Font: {fileID: 12800000, guid: eb5cac061c5ecf74b9b1661771421840, type: 3}
-      m_FontSize: 11
+      m_FontSize: 10
       m_FontStyle: 0
       m_Alignment: 0
       m_WordWrap: 1
@@ -188,13 +188,13 @@ MonoBehaviour:
         m_Top: 0
         m_Bottom: 0
       m_Margin:
-        m_Left: 4
-        m_Right: 4
-        m_Top: 4
-        m_Bottom: 4
+        m_Left: 0
+        m_Right: 0
+        m_Top: 0
+        m_Bottom: 0
       m_Padding:
-        m_Left: 5
-        m_Right: 5
+        m_Left: 2
+        m_Right: 2
         m_Top: 2
         m_Bottom: 2
       m_Overflow:
@@ -203,7 +203,7 @@ MonoBehaviour:
         m_Top: 0
         m_Bottom: 0
       m_Font: {fileID: 12800000, guid: eb5cac061c5ecf74b9b1661771421840, type: 3}
-      m_FontSize: 10
+      m_FontSize: 9
       m_FontStyle: 1
       m_Alignment: 1
       m_WordWrap: 1

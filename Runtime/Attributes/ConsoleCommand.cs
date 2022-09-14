@@ -15,20 +15,17 @@ namespace Smidgenomics.Unity.Console
 	)]
 	public class ConsoleCommandAttribute : Attribute
 	{
-
 		public ConsoleCommandAttribute
 		(
-			string name = STR_EMPTY,
-			string description = STR_EMPTY
+			string name = Empty.STRING,
+			string description = Empty.STRING
 		)
 		{
 			this.name = name;
 			this.description = description;
 		}
 
-		internal string name { get; set; } = STR_EMPTY;
-		internal string description { get; set; } = STR_EMPTY;
-
-		private const string STR_EMPTY = "";
+		internal string name { get; }
+		internal string description { get; }
 	}
 }

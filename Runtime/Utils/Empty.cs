@@ -9,6 +9,8 @@ namespace Smidgenomics.Unity.Console
 			return new T();
 		}
 
+		public const string STRING = "";
+
 		public static class Array
 		{
 			public readonly static string[] STRING = { };

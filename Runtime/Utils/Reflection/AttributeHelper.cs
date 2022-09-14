@@ -42,6 +42,5 @@ namespace Smidgenomics.Unity.Console
 			}
 			return _assemblyCache;
 		}
-
 	}
 }

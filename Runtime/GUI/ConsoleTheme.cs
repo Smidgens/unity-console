@@ -5,22 +5,24 @@ namespace Smidgenomics.Unity.Console
 	using UnityEngine;
 
 #if !CONSOLE_DISABLE_CM
-	[CreateAssetMenu(menuName = Config.CreateAssetMenu.THEME)]
+	[CreateAssetMenu(menuName = Config.CreateAssetMenu.THEME, order = 10)]
 #endif
 	internal class ConsoleTheme : ScriptableObject
 	{
-		public Color BackgroundColor => _backgroundColor;
+		public Color BackgroundColor => _windowColors.background;
 
 		public Color FindColor(int l)
 		{
 			return _logColors.Select(l);
 		}
 
+		[Header("COLORS")]
+		[Expand(label:"Window")]
 		[SerializeField]
-		private Color _backgroundColor = Color.black * 0.5f;
+		private ThemeConfig.WindowColors _windowColors = ThemeConfig.defaultWindowColors;
 
-		[Expand]
+		[Expand(label:"Log")]
 		[SerializeField]
-		private LogColors _logColors = LogColors.Default;
+		private ThemeConfig.LogColors _logColors = ThemeConfig.defaultLogColors;
 	}
 }

@@ -59,6 +59,7 @@ namespace Smidgenomics.Unity.Console.Editor
 	{
 		public static void FindVisibleFields(this SO o, List<string> l)
 		{
+			FindVisibleFields(o.targetObject.GetType().BaseType, l);
 			FindVisibleFields(o.targetObject.GetType(), l);
 		}
 

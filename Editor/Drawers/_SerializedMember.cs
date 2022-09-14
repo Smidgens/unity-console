@@ -10,7 +10,7 @@ namespace Smidgenomics.Unity.Console.Editor
 	using System.Reflection;
 	using System.Collections.Generic;
 
-	[CustomPropertyDrawer(typeof(SerializedMember))]
+	[CustomPropertyDrawer(typeof(SerializedMethod))]
 	internal class _SerializedMember : PropertyDrawer
 	{
 		public static class Label
@@ -40,7 +40,6 @@ namespace Smidgenomics.Unity.Console.Editor
 		{
 			public UnityObject TargetRef => target.objectReferenceValue;
 
-
 			public SP prop, target, mName, mTypes, cacheKey;
 
 			public string buttonLabel;
@@ -52,7 +51,7 @@ namespace Smidgenomics.Unity.Console.Editor
 				if (string.IsNullOrEmpty(mName.stringValue)) { return null; }
 				if(mTypes.arraySize < 2) { return null; }
 				var types = mTypes.GetStringArray();
-				return ConsoleReflection.LoadMethod(mName.stringValue, types);
+				return MethodHelper.LoadMethod(mName.stringValue, types);
 			}
 
 			public static DrawerContext Init(SP prop)
@@ -60,10 +59,10 @@ namespace Smidgenomics.Unity.Console.Editor
 				var ctx = new DrawerContext
 				{
 					prop = prop,
-					target = prop.FindPropertyRelative(SerializedMember._FN.TARGET),
-					mName = prop.FindPropertyRelative(SerializedMember._FN.M_NAME),
-					mTypes = prop.FindPropertyRelative(SerializedMember._FN.M_TYPES),
-					cacheKey = prop.FindPropertyRelative(SerializedMember._FN.CACHE_KEY),
+					target = prop.FindPropertyRelative(SerializedMethod._FN.TARGET),
+					mName = prop.FindPropertyRelative(SerializedMethod._FN.M_NAME),
+					mTypes = prop.FindPropertyRelative(SerializedMethod._FN.M_TYPES),
+					cacheKey = prop.FindPropertyRelative(SerializedMethod._FN.CACHE_KEY),
 				};
 				ctx.buttonLabel = GetButtonLabel(ctx);
 				return ctx;

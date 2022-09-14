@@ -18,7 +18,7 @@ namespace Smidgenomics.Unity.Console
 
 		public static string ToLogTime(this DateTime d)
 		{
-			return d.ToString("[HH:mm:ss]");
+			return d.ToString("HH:mm:ss");
 		}
 	}
 }

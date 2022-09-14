@@ -6,7 +6,7 @@ namespace Smidgenomics.Unity.Console
 	using System;
 
 #if SMIDGENOMICS_DEV
-	[CreateAssetMenu(menuName = "Console/Resources")]
+	[CreateAssetMenu(menuName = "Console/Resources", order = 25)]
 #endif
 	internal class ConsoleResources : ScriptableObject
 	{
@@ -35,8 +35,5 @@ namespace Smidgenomics.Unity.Console
 		[SerializeField] DefaultStyles _styles = default;
 
 		private static (ConsoleResources, bool) _cache = default;
-
-
-
 	}
 }

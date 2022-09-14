@@ -6,14 +6,6 @@ namespace Smidgenomics.Unity.Console
 	using System;
 	using System.Collections.Generic;
 
-	public interface IConsoleWidget
-	{
-		public int Order { get; }
-		public bool Enabled { get; }
-		public float GetWidth(float height);
-		public void OnWidgetGUI(in Rect pos);
-	}
-
 	[AddComponentMenu(Config.AddComponentMenu.CONSOLE_GUI)]
 	internal partial class ConsoleGUI : MonoBehaviour
 	{
@@ -57,7 +49,7 @@ namespace Smidgenomics.Unity.Console
 			});
 		}
 
-		[SerializeField] private Console _console = default;
+		[SerializeField] private ConsoleAsset _console = default;
 		[SerializeField] private ConsoleTheme _themeOverride = default;
 		[SerializeField] private bool _manualMode = false;
 
@@ -77,8 +69,7 @@ namespace Smidgenomics.Unity.Console
 		private string _activeFocus = null;
 		private Action _guiFn = NoOp.Action.A0;
 
-		private List<IConsoleWidget> _toolbarWidgets = new List<IConsoleWidget>();
-		//private SortedList<int, IConsoleWidget> _toolbarWidgets = new SortedList<int, IConsoleWidget>();
+		private List<IConsoleWidget> _widgets = new List<IConsoleWidget>();
 
 		private static class ErrMsg
 		{
@@ -100,11 +91,11 @@ namespace Smidgenomics.Unity.Console
 
 		private void Awake()
 		{
-			foreach(var w in GetComponentsInChildren<IConsoleWidget>())
+			foreach (var w in GetComponentsInChildren<IConsoleWidget>())
 			{
-				_toolbarWidgets.Add(w);
+				_widgets.Add(w);
 			}
-			_toolbarWidgets.Sort(CompareWidgetOrder);
+			Sort.ByOrder(_widgets);
 
 			_items = new ItemGUI();
 			_items.console = _console;
@@ -139,11 +130,6 @@ namespace Smidgenomics.Unity.Console
 		private void OnGUI()
 		{
 			_guiFn.Invoke();
-		}
-
-		private static int CompareWidgetOrder(IConsoleWidget a, IConsoleWidget b)
-		{
-			return a.Order.CompareTo(b.Order);
 		}
 
 		private static ConsoleStyles GetStyles()
@@ -197,13 +183,30 @@ namespace Smidgenomics.Unity.Console
 		private void DrawToolbar(in Rect pos)
 		{
 			var area = pos;
-			foreach(var widget in _toolbarWidgets)
+			foreach(var widget in _widgets)
 			{
+				if (widget == null) { continue; }
+
 				if (!widget.Enabled) { continue; }
+				var placement = widget.Placement;
+				if (placement == 0) { continue; }
+
 				var w = widget.GetWidth(pos.height);
-				var r = area.SliceRight(w);
+
+				var r = placement < 0
+				? area.SliceLeft(w)
+				: area.SliceRight(w);
+
 				widget.OnWidgetGUI(r);
-				BorderGUI.BorderLeft(r, BORDER_COLOR);
+
+				if (placement < 0)
+				{
+					BorderGUI.BorderRight(r, BORDER_COLOR);
+				}
+				else
+				{
+					BorderGUI.BorderLeft(r, BORDER_COLOR);
+				}
 			}
 		}
 
@@ -263,7 +266,7 @@ namespace Smidgenomics.Unity.Console
 			_inputValue = string.Empty;
 			_inputLog.Append(v);
 			ScrollBottom();
-			_console.Process(v);
+			_console.Exec(v);
 			FocusInput();
 		}
 
@@ -307,7 +310,7 @@ namespace Smidgenomics.Unity.Console
 		private class ItemGUI
 		{
 			public float TotalHeight => GetTotalHeight();
-			public Console console = default;
+			public ConsoleAsset console = default;
 			public ConsoleTheme theme = default;
 
 			public void Init(in ConsoleStyles styles)
@@ -323,6 +326,7 @@ namespace Smidgenomics.Unity.Console
 
 				var itemRect = new Rect(default, new Vector2(size.x, 1f));
 				var max = scroll + size.y;
+
 				var si = FindStartIndex(scroll);
 
 				for (var i = si; i < console.Log.Length; i++)
@@ -381,6 +385,48 @@ namespace Smidgenomics.Unity.Console
 			{
 				_count = 0;
 				_logID = 0;
+			}
+
+			private int FindStartBS(in float scroll)
+			{
+				if(console.Log.Length == 0) { return 0; }
+				if(scroll == 0) { return 0; }
+				var low = 0;
+				var high = console.Log.Length - 1;
+
+				if(high < 2) { return 0; }
+
+				// 0,1,2
+
+				var mid = 0;
+
+				while(low != high)
+				{
+					mid = (low + high) / 2;
+					var current = _items[mid];
+					var y = current.offset;
+		
+					var max = y + current.height;
+
+					if(y <= scroll && scroll < max)
+					{
+						return mid;
+					}
+					if(scroll > max)
+					{
+						low = mid + 1;
+					}
+					else
+					{
+						high = mid - 1;
+					}
+				}
+				return mid > 0 ? mid - 1 : mid;
+			}
+
+			private int Compare(in DisplayItem a, in DisplayItem b)
+			{
+				return 0;
 			}
 
 			private int FindStartIndex(float scroll)
@@ -498,7 +544,6 @@ namespace Smidgenomics.Unity.Console
 				if (Event.current == null || string.IsNullOrEmpty(id)) { return; }
 				GUI.FocusControl(id);
 			}
-
 		}
 	}
 }

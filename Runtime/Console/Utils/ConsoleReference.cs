@@ -10,7 +10,7 @@ namespace Smidgenomics.Unity.Console
 	{
 		public bool IsSet => _asset != null;
 		public IConsole Console => _asset;
-		[SerializeField] private Console _asset;
+		[SerializeField] private ConsoleAsset _asset;
 	}
 }
 

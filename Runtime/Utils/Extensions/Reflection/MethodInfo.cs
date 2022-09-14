@@ -14,12 +14,20 @@ namespace Smidgenomics.Unity.Console
 			return 3;
 		}
 
-		public static bool TryGetProperty(this MethodInfo m, out PropertyInfo p)
+		public static bool TryGetBackingProperty(this MethodInfo m, out PropertyInfo p)
 		{
 			var pname = m.GetPropertyName();
 			p = m.ReflectedType.GetProperty(pname);
 			if (!p.CanRead || !p.CanWrite) { return false; }
 			return true;
+		}
+
+		public static PropertyInfo GetBackingProperty(this MethodInfo m)
+		{
+			var pname = m.GetPropertyName();
+			var p = m.ReflectedType.GetProperty(pname);
+			if (!p.CanRead || !p.CanWrite) { return null; }
+			return p;
 		}
 
 		public static bool IsVoid(this MethodInfo m) => m.ReturnType == typeof(void);

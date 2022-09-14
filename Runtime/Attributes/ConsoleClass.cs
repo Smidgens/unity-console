@@ -10,23 +10,19 @@ namespace Smidgenomics.Unity.Console
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 	public class ConsoleClassAttribute : Attribute
 	{
-		public bool exposeAll = false;
-		public bool scoped = false;
-		public string displayName = string.Empty;
+		internal bool exposeAll = false;
+		internal bool scoped = false;
+		internal string scopeName = string.Empty;
 
-		public ConsoleClassAttribute()
+		public ConsoleClassAttribute
+		(
+			string scopeName = Empty.STRING,
+			bool scoped = false,
+			bool exposeAll = false
+		)
 		{
-
-		}
-
-		public ConsoleClassAttribute(string displayName = "")
-		{
-			this.displayName = displayName;
-			this.scoped = true;
-		}
-
-		public ConsoleClassAttribute(bool exposeAll)
-		{
+			this.scoped = scoped;
+			this.scopeName = scopeName;
 			this.exposeAll = exposeAll;
 		}
 	}

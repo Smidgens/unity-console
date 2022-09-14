@@ -37,8 +37,6 @@ namespace Smidgenomics.Unity.Console.Editor
 
 			var cattributes = fieldInfo.GetCustomAttributes<FieldSizeAttribute>().ToArray();
 
-
-
 			var fields = a.Fields;
 
 			if (fields.Length == 0)

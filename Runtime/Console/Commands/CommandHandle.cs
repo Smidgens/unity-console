@@ -9,27 +9,29 @@ namespace Smidgenomics.Unity.Console
 	/// </summary>
 	public struct CommandHandle : IEquatable<CommandHandle>
 	{
+		public static readonly CommandHandle Empty = default;
+
 		public bool IsValid => _valid == 1;
 
 		public override bool Equals(object obj)
 		{
 			if (!(obj is CommandHandle)) { return false; }
 			var o = (CommandHandle)obj;
-			return o._value == _value;
+			return o._key == _key;
 		}
 
-		public override int GetHashCode() => _value.GetHashCode();
-		public bool Equals(CommandHandle other) => _value == other._value;
+		public override int GetHashCode() => _key.GetHashCode();
+		public bool Equals(CommandHandle other) => _key == other._key;
 		public static bool operator ==(CommandHandle l, CommandHandle r) => l.Equals(r);
 		public static bool operator !=(CommandHandle l, CommandHandle r) => !(l == r);
 
 		internal CommandHandle(uint v)
 		{
-			_value = v;
+			_key = v;
 			_valid = 1;
 		}
 
-		private uint _value;
-		private byte _valid;
+		private readonly uint _key;
+		private readonly byte _valid;
 	}
 }

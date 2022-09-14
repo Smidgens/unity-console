@@ -8,23 +8,26 @@ namespace Smidgenomics.Unity.Console
 	using System.Text;
 	using System.Collections.Generic;
 
-
 #if !CONSOLE_DISABLE_CM
 	[CreateAssetMenu(menuName = Config.CreateAssetMenu.CONSOLE)]
 #endif
-	internal class Console : ScriptableObject, IConsole
+	internal class ConsoleAsset : ScriptableObject, IConsole
 	{
 		public static class LogMsg
 		{
 			public const string
 			INIT_MSG = "Console initialized",
 			NO_RESULTS = "No results",
-			VARIABLES = "Variables",
-			METHODS = "Methods",
+			VARIABLES = "<b>VARIABLES</b>",
+			METHODS = "<b>METHODS</b>",
+			UNKNOWN_COMMAND = "Unknown command: '{0}'",
 			UNKNOWN_ERR = "Unknown error in handler",
+			NOT_IMPLEMENTED = "Not implemented",
 			VARIABLE_NF = "Variable not found:\n  '{0}'",
 			METHOD_NF = "Method not found:\n  '{0}'";
 		}
+
+		public IConsoleLog Log => _log;
 
 		public void AddLog(object o) => AddLog(o.ToString());
 		public void AddLog(string msg) => AddLog(msg, 0);
@@ -34,17 +37,17 @@ namespace Smidgenomics.Unity.Console
 			_log.Clear();
 		}
 
-		public void Process(string input)
+		public void Exec(string input)
 		{
 			HandleInput(input);
 		}
 
-		public void RemoveCommand(in CommandHandle key)
+		public void Remove(in CommandHandle key)
 		{
-			if(!_htypes.TryGetValue(key, out var type)) { return; }
-			_htypes.Remove(key);
+			if(!_handlerInfos.TryGetValue(key, out var info)) { return; }
+			_handlerInfos.Remove(key);
 
-			switch (type)
+			switch (info.type)
 			{
 				case HandlerType.Method:
 					Remove(key, _methods);
@@ -55,7 +58,7 @@ namespace Smidgenomics.Unity.Console
 			}
 		}
 		
-		public CommandHandle AddCommand
+		public CommandHandle Add
 		(
 			string name,
 			MemberInfo mi,
@@ -72,7 +75,7 @@ namespace Smidgenomics.Unity.Console
 				case MemberTypes.Field:
 					return AddField(name, mi as FieldInfo, context, description);
 			}
-			return default;
+			throw new ConsoleException("Member type not supported in console");
 		}
 
 		internal CommandHandle AddField
@@ -80,22 +83,25 @@ namespace Smidgenomics.Unity.Console
 			string name,
 			FieldInfo field,
 			object context,
-			string description = ""
+			string description = Empty.STRING
 		)
 		{
-			if (field.IsInitOnly)
+
+			var err = Validate(field, context);
+
+			if(err != null)
 			{
-				return default;
+				throw new ConsoleException(err);
 			}
 
-			if (!ConsoleReflection.IsConsoleUsable(field.FieldType))
+			if (!CSupport.IsConsoleUsable(field.FieldType))
 			{
-				return default;
+				throw new ConsoleException();
 			}
 
 			var key = _keys.Next();
 
-			var item = new VariableHandler
+			var item = new VHandler
 			{
 				key = key,
 				name = name,
@@ -103,7 +109,10 @@ namespace Smidgenomics.Unity.Console
 				field = field,
 				description = description
 			};
-			_htypes[key] = HandlerType.Prop;
+			_handlerInfos[key] = new HandlerInfo
+			{
+				type = HandlerType.Prop
+			};
 			_variables.Add(item);
 			return key;
 		}
@@ -125,7 +134,7 @@ namespace Smidgenomics.Unity.Console
 
 			var key = _keys.Next();
 
-			var item = new VariableHandler
+			var item = new VHandler
 			{
 				key = key,
 				name = name,
@@ -133,7 +142,10 @@ namespace Smidgenomics.Unity.Console
 				property = property,
 				description = description
 			};
-			_htypes[key] = HandlerType.Prop;
+			_handlerInfos[key] = new HandlerInfo
+			{
+				type = HandlerType.Prop
+			};
 			_variables.Add(item);
 
 			return key;
@@ -159,7 +171,7 @@ namespace Smidgenomics.Unity.Console
 
 			foreach (var p in parameters)
 			{
-				invalid = !ConsoleReflection.IsConsoleUsable(p);
+				invalid = !CSupport.IsConsoleUsable(p);
 				if (invalid) { break; }
 			}
 
@@ -185,7 +197,7 @@ namespace Smidgenomics.Unity.Console
 
 			var key = _keys.Next();
 
-			var item = new MethodHandler
+			var item = new MHandler
 			{
 				key = key,
 				name = name,
@@ -195,13 +207,15 @@ namespace Smidgenomics.Unity.Console
 				parameters = required.ToArray(),
 			};
 
-			_htypes[key] = HandlerType.Method;
+			_handlerInfos[key] = new HandlerInfo
+			{
+				type = HandlerType.Method
+			};
 			_methods.Add(item);
 
 			return key;
 		}
 
-		internal IOutputLog Log => _log;
 		internal void Init() => _initFn.Invoke(this);
 
 		internal static class Keyword
@@ -210,24 +224,36 @@ namespace Smidgenomics.Unity.Console
 			LIST = "list",
 			HELP = "describe",
 			INSPECT = "value_of",
+			RUN_SCRIPT = "exec",
 			CLEAR = "clear";
+
 		}
+
+		// lazy init
+		private delegate void InitFn(ConsoleAsset c);
+		private static InitFn _initFn = InitStart;
+
 
 		[Expand]
 		[SerializeField]
 		private ConsoleSettings _settings = new ConsoleSettings();
 
-		private List<VariableHandler> _variables = new List<VariableHandler>();
-		private List<MethodHandler> _methods = new List<MethodHandler>();
+		[SerializeField]
+		private ConsoleCommandAsset[] _commands = {};
 
-		private Dictionary<CommandHandle, HandlerType>
-		_htypes = new Dictionary<CommandHandle, HandlerType>();
+		private List<VHandler> _variables = new List<VHandler>();
+		private List<MHandler> _methods = new List<MHandler>();
 
-		private delegate void InitFn(Console c); // lazy init
-		private static InitFn _initFn = InitStart;
+		private Dictionary<CommandHandle, HandlerInfo>
+		_handlerInfos = new Dictionary<CommandHandle, HandlerInfo>();
 
 		private readonly OutputLog _log = new OutputLog();
 		private HandleFactory _keys = new HandleFactory();
+
+		private struct HandlerInfo
+		{
+			public HandlerType type;
+		}
 
 		internal struct HandleFactory
 		{
@@ -237,7 +263,7 @@ namespace Smidgenomics.Unity.Console
 
 		private enum HandlerType { Method, Prop, Field }
 
-		private static void InitStart(Console c)
+		private static void InitStart(ConsoleAsset c)
 		{
 			c.InitDefaultHandlers();
 			c.InitAttributeHandlers();
@@ -247,24 +273,55 @@ namespace Smidgenomics.Unity.Console
 
 		private void InitAttributeHandlers()
 		{
-			if(_settings.attributes == AttributeSearchScope.None)
+			if(_settings.commandAttributes == AttributeSearchScope.None)
 			{
 				return;
 			}
-			ConsoleHelper.FindAttributes(this, _settings.attributes);
+			ConsoleHelper.FindCommandAttributes(this, _settings.commandAttributes);
 		}
 
 		private void InitDefaultHandlers()
 		{
 			var c = this as IConsole;
-			c.AddCommand(Keyword.CLEAR, MethodHelper.GetMethod(Clear), this);
-			c.AddCommand(Keyword.LIST, MethodHelper.GetMethod(ListHandlers), this);
-			Action<string> listFilter = ListHandlers;
-			Action<string> help = Describe;
-			Action<string> inspect = Inspect;
-			c.AddCommand(Keyword.LIST, listFilter.Method, this);
-			c.AddCommand(Keyword.HELP, help.Method, this);
-			c.AddCommand(Keyword.INSPECT, inspect.Method, this);
+
+			InitAssetCommands();
+
+			var dCommands = _settings.builtInCommands;
+
+			if (dCommands.HasFlag(DefaultCommand.List))
+			{
+				c.Add(Keyword.LIST, MethodHelper.GetMethod(ListHandlers), this);
+			}
+
+			if (dCommands.HasFlag(DefaultCommand.ListWildcard))
+			{
+				c.Add(Keyword.LIST, MethodHelper.GetMethod<string>(ListHandlers), this);
+			}
+
+			if (dCommands.HasFlag(DefaultCommand.Describe))
+			{
+				c.Add(Keyword.HELP, MethodHelper.GetMethod<string>(Describe), this);
+			}
+
+			if (dCommands.HasFlag(DefaultCommand.Inspect))
+			{
+				c.Add(Keyword.INSPECT, MethodHelper.GetMethod<string>(Inspect), this);
+			}
+
+			if (dCommands.HasFlag(DefaultCommand.Exec))
+			{
+				c.Add(Keyword.RUN_SCRIPT, MethodHelper.GetMethod<string>(RunScript), this);
+			}
+		}
+
+		private void InitAssetCommands()
+		{
+			foreach(var c in _commands)
+			{
+				if (!c) { continue; }
+				if (c.IsBound) { continue; }
+				c.Bind(this);
+			}
 		}
 
 		private static string Validate(FieldInfo f, object ctx)
@@ -287,7 +344,7 @@ namespace Smidgenomics.Unity.Console
 
 		private static string ValidateProperty(PropertyInfo p, object ctx)
 		{
-			if (!ConsoleReflection.IsConsoleUsable(p.PropertyType))
+			if (!CSupport.IsConsoleUsable(p.PropertyType))
 			{
 				throw new ConsoleException("Property type not supported");
 			}
@@ -348,7 +405,7 @@ namespace Smidgenomics.Unity.Console
 			public void Stringify(StringBuilder b, uint indent, bool newline);
 		}
 
-		private struct MethodHandler : IKeyedHandler
+		private struct MHandler : IKeyedHandler
 		{
 			public string Name => name;
 			public string Description => description;
@@ -364,14 +421,19 @@ namespace Smidgenomics.Unity.Console
 			{
 				for (int i = 0; i < indent; i++)
 				{
-					s.Append("  ");
+					s.Append("  | ");
 				}
 				s.Append(name);
 				s.Append(" (");
 				var pi = 0;
 				foreach (var p in parameters)
 				{
+					s.Append("<color=orange>");
+					s.Append("<i>");
 					s.Append(p.GetNameOrAlias());
+					s.Append("</i>");
+					s.Append("</color>");
+
 					if (pi < parameters.Length - 1)
 					{
 						s.Append(", ");
@@ -383,7 +445,7 @@ namespace Smidgenomics.Unity.Console
 			}
 		}
 
-		private struct VariableHandler : IKeyedHandler
+		private struct VHandler : IKeyedHandler
 		{
 			public string Name => name;
 			public string Description => description;
@@ -400,11 +462,14 @@ namespace Smidgenomics.Unity.Console
 
 				for(int i = 0; i < indent; i++)
 				{
-					s.Append("  ");
+					s.Append("  | ");
 				}
 				s.Append(name);
-				s.Append(": ");
-				if(property != null)
+				s.Append(":");
+				s.Append("<color=orange>");
+				s.Append("<i>");
+
+				if (property != null)
 				{
 					s.Append(property.PropertyType.GetNameOrAlias());
 				}
@@ -412,7 +477,8 @@ namespace Smidgenomics.Unity.Console
 				{
 					s.Append(field.FieldType.GetNameOrAlias());
 				}
-
+				s.Append("</i>");
+				s.Append("</color>");
 				if (newLine) { s.Append('\n'); }
 			}
 		}
@@ -555,7 +621,7 @@ namespace Smidgenomics.Unity.Console
 			}
 		}
 
-		private bool MatchMethod(in MethodHandler h, in CommandRequest r)
+		private bool MatchMethod(in MHandler h, in CommandRequest r)
 		{
 			if (h.method == null) { return false; }
 			if (h.name != r.keyword) { return false; }
@@ -569,7 +635,6 @@ namespace Smidgenomics.Unity.Console
 			}
 			return true;
 		}
-
 
 		private void LogVariableNF(string name)
 		{
@@ -633,14 +698,9 @@ namespace Smidgenomics.Unity.Console
 			return -1;
 		}
 
-		private void SortByName<T>(List<T> l) where T : IKeyedHandler
+		private void RunScript(string path)
 		{
-			l.Sort(SortByName);
-		}
-
-		private int SortByName<T>(T a, T b) where T : IKeyedHandler
-		{
-			return a.Name.CompareTo(b.Name);
+			AddLog(LogMsg.NOT_IMPLEMENTED, -1);
 		}
 
 		private void Describe(string name)
@@ -660,18 +720,17 @@ namespace Smidgenomics.Unity.Console
 				AddLog(_methods[i].description);
 				return;
 			}
-
-			AddLog($"Unknown command: '{name}'", -1);
+			AddLog(string.Format(LogMsg.UNKNOWN_COMMAND, name), -1);
 		}
 
-		private void ListHandlers(string filter)
+		public void ListHandlers(string filter)
 		{
 			var s = new StringBuilder();
 			StringifyHandlers(s, h => h.Name.IsMatch(filter));
 			_log.Append(s.ToString(), 1);
 		}
 
-		private void ListHandlers()
+		public void ListHandlers()
 		{
 			var s = new StringBuilder();
 			StringifyHandlers(s);

@@ -7,7 +7,8 @@ namespace Smidgenomics.Unity.Console
 
 	internal static partial class GUIScope
 	{
-		public struct GUIColor : IDisposable
+
+		private struct GUIColor : IDisposable
 		{
 			public static GUIColor Content(Color c)
 			{

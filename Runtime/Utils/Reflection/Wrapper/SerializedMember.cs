@@ -8,7 +8,7 @@ namespace Smidgenomics.Unity.Console
 	using UnityObject = UnityEngine.Object;
 
 	[Serializable]
-	internal struct StringifiedMember
+	internal struct StringifiedMethod
 	{
 		public string name;
 		// [type, return, params]
@@ -40,7 +40,7 @@ namespace Smidgenomics.Unity.Console
 	}
 
 	[Serializable]
-	internal class SerializedMember
+	internal class SerializedMethod
 	{
 		public string Name => _member.name;
 		public UnityObject Target => _target;
@@ -55,8 +55,8 @@ namespace Smidgenomics.Unity.Console
 		internal static class _FN
 		{
 			public const string
-			M_NAME = nameof(_member) + "." + nameof(StringifiedMember.name),
-			M_TYPES = nameof(_member) + "." + nameof(StringifiedMember.types),
+			M_NAME = nameof(_member) + "." + nameof(StringifiedMethod.name),
+			M_TYPES = nameof(_member) + "." + nameof(StringifiedMethod.types),
 			CACHE_KEY = nameof(_cacheKey),
 			TARGET = nameof(_target);
 		}
@@ -64,7 +64,7 @@ namespace Smidgenomics.Unity.Console
 
 		[SerializeField] private int _cacheKey; // cache helper
 		[SerializeField] private UnityObject _target;
-		[SerializeField] StringifiedMember _member = default;
+		[SerializeField] StringifiedMethod _member = default;
 
 		// key, method, init
 		private (int, MethodInfo, bool) _cache;
@@ -87,7 +87,7 @@ namespace Smidgenomics.Unity.Console
 
 		private MethodInfo LoadMethod()
 		{
-			return ConsoleReflection.LoadMethod(_member);
+			return MethodHelper.LoadMethod(_member.name, _member.types);
 		}
 	}
 }

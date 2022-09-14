@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 840454d47bc0b714298da3bbd959b51f, type: 3}
   m_Name: '{d_theme}'
   m_EditorClassIdentifier: 
-  _backgroundColor: {r: 0, g: 0, b: 0, a: 0.5}
+  _windowColors:
+    background: {r: 0, g: 0, b: 0, a: 0.5}
   _logColors:
-    _normal: {r: 1, g: 1, b: 1, a: 1}
-    _info: {r: 0.109, g: 0.749, b: 0.831, a: 1}
-    _warning: {r: 0.858, g: 0.619, b: 0.078, a: 1}
-    _success: {r: 0.2, g: 0.721, b: 0, a: 1}
-    _error: {r: 1, g: 0.219, b: 0.227, a: 1}
-    _expression: {r: 1, g: 0.5529412, b: 1, a: 1}
+    normal: {r: 1, g: 1, b: 1, a: 1}
+    info: {r: 0.10980392, g: 0.7490196, b: 0.83137256, a: 1}
+    warning: {r: 0.85882354, g: 0.61960787, b: 0.078431375, a: 1}
+    success: {r: 0.2, g: 0.721, b: 0, a: 1}
+    error: {r: 1, g: 0.219, b: 0.227, a: 1}
+    expression: {r: 1, g: 0.5529412, b: 1, a: 1}

@@ -5,41 +5,12 @@ namespace Smidgenomics.Unity.Console
 	using System;
 	using System.Collections.Generic;
 
-	internal interface IOutputLog
-	{
-		/// <summary>
-		/// Number of items
-		/// </summary>
-		public int Length { get; }
-		/// <summary>
-		/// Caching helper
-		/// </summary>
-		public uint ID { get; }
-
-		/// <summary>
-		/// Get log item at index
-		/// </summary>
-		public IOutputLogItem this[int i] { get; }
-
-		/// <summary>
-		/// Add log item
-		/// </summary>
-		public void Append(string msg, int type);
-	}
-
-	internal interface IOutputLogItem
-	{
-		public int Type { get; }
-		public string Text { get; }
-		public DateTime Time { get; }
-	}
-
-	internal class OutputLog : IOutputLog
+	internal class OutputLog : IConsoleLog
 	{
 		public int Length => _items.Count;
 		public uint ID { get; private set; } = 1;
 
-		public IOutputLogItem this[int i]
+		public IConsoleLogItem this[int i]
 		{
 			get
 			{
@@ -64,7 +35,7 @@ namespace Smidgenomics.Unity.Console
 
 		private readonly List<LogItem> _items = new List<LogItem>();
 
-		private readonly struct LogItem : IOutputLogItem
+		private readonly struct LogItem : IConsoleLogItem
 		{
 			public string Text { get; }
 			public int Type { get; }

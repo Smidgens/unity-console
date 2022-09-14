@@ -23,7 +23,8 @@ namespace Smidgenomics.Unity.Console
 			public const string
 			CONSOLE_GUI = _PREFIX + "Console GUI",
 			CONSOLE_HANDLER = _PREFIX + "Console Command",
-			TOOLBAR_BUTTON = _PREFIX + "Console Button (Toolbar)";
+			TOOLBAR_BUTTON = _PREFIX + "Toolbar/Console Button (Toolbar)",
+			TOOLBAR_DROPDOWN = _PREFIX + "Toolbar/Console Dropdown (Toolbar)";
 			private const string _PREFIX = "Smidgenomics/Console/";
 		}
 
@@ -31,6 +32,7 @@ namespace Smidgenomics.Unity.Console
 		{
 			public const string
 			CONSOLE = _PREFIX + "Console",
+			CONSOLE_CMD = _PREFIX + "Console Command",
 			THEME = _PREFIX + "Console Theme";
 
 			private const string _PREFIX = "Console/";

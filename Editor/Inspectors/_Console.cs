@@ -3,9 +3,9 @@
 namespace Smidgenomics.Unity.Console.Editor
 {
 	using UnityEditor;
-	using Console = Console;
+	using ConsoleAsset = ConsoleAsset;
 
-	[CustomEditor(typeof(Console))]
+	[CustomEditor(typeof(ConsoleAsset))]
 	internal class _Console : _Base
 	{
 		
