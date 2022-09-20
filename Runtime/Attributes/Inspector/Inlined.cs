@@ -15,7 +15,7 @@ namespace Smidgenomics.Unity.Console
 
 	[Conditional("UNITY_EDITOR")]
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-	public class FieldSizeAttribute : Attribute
+	internal class FieldSizeAttribute : Attribute
 	{
 		public string Name { get; }
 		public float Width { get; } = -1f;
@@ -30,7 +30,7 @@ namespace Smidgenomics.Unity.Console
 
 	[Conditional("UNITY_EDITOR")]
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-	public class InlinedAttribute : PropertyAttribute
+	internal class InlinedAttribute : PropertyAttribute
 	{
 		public bool ShowArrayLabel { get; set; } = false;
 		public string[] Fields { get; private set; } = { };

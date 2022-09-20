@@ -55,7 +55,7 @@ namespace Smidgenomics.Unity.Console
 			hover = Color.white * 0.07f
 		};
 
-		[SerializeField] private AtlasIcon _icon = AtlasIcon.fill;
+		[SerializeField] private AtlasSprite _icon = AtlasSprite.fill;
 		[SerializeField] private UnityEvent _onClick = default;
 
 		[System.Serializable]

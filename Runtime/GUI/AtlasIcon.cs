@@ -7,15 +7,15 @@ namespace Smidgenomics.Unity.Console
 	using System;
 
 	[Serializable]
-	internal struct AtlasIcon
+	internal struct AtlasSprite
 	{
-		public static readonly AtlasIcon fill = new AtlasIcon
+		public static readonly AtlasSprite fill = new AtlasSprite
 		{
 			_size = Vector2.one,
 			_offset = Vector2.zero,
 		};
 
-		public AtlasIcon(Texture tex, Vector2 size, Vector2 offset)
+		public AtlasSprite(Texture tex, Vector2 size, Vector2 offset)
 		{
 			_size = size;
 			_offset = offset;
@@ -51,7 +51,7 @@ namespace Smidgenomics.Unity.Console
 	using UnityEngine;
 	using UnityEditor;
 
-	[CustomPropertyDrawer(typeof(AtlasIcon))]
+	[CustomPropertyDrawer(typeof(AtlasSprite))]
 	internal class _AtlasIcon : PropertyDrawer
 	{
 		public const byte MARGIN_Y = 2;
@@ -80,9 +80,9 @@ namespace Smidgenomics.Unity.Console
 			var ctx = new DrawerContext
 			{
 				prop = prop,
-				texture = prop.FindPropertyRelative(AtlasIcon.__FN.TEXTURE),
-				offset = prop.FindPropertyRelative(AtlasIcon.__FN.OFFSET),
-				size = prop.FindPropertyRelative(AtlasIcon.__FN.SIZE),
+				texture = prop.FindPropertyRelative(AtlasSprite.__FN.TEXTURE),
+				offset = prop.FindPropertyRelative(AtlasSprite.__FN.OFFSET),
+				size = prop.FindPropertyRelative(AtlasSprite.__FN.SIZE),
 			};
 
 			EditorGUI.BeginProperty(pos, l, prop);

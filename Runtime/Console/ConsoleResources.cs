@@ -10,8 +10,6 @@ namespace Smidgenomics.Unity.Console
 #endif
 	internal class ConsoleResources : ScriptableObject
 	{
-		public static ConsoleResources Instance => GetInstance();
-
 		public static ConsoleResources GetInstance()
 		{
 			var (instance, init) = _cache;
@@ -22,8 +20,9 @@ namespace Smidgenomics.Unity.Console
 			return instance;
 		}
 
-		public DefaultStyles Styles => _styles;
-		public ConsoleTheme Theme => _theme;
+		public Font DefaultFont => _font;
+		public ConsoleTheme DefaultTheme => _theme;
+		public Texture Icons => _icons;
 
 		[Serializable]
 		public struct DefaultStyles
@@ -31,8 +30,9 @@ namespace Smidgenomics.Unity.Console
 			public GUIStyle text, input, timestamp;
 		}
 
+		[SerializeField] Font _font = default;
 		[SerializeField] ConsoleTheme _theme = default;
-		[SerializeField] DefaultStyles _styles = default;
+		[SerializeField] Texture _icons = default;
 
 		private static (ConsoleResources, bool) _cache = default;
 	}

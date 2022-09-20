@@ -36,11 +36,11 @@ namespace Smidgenomics.Unity.Console
 		private struct DropdownOption
 		{
 			public string label;
-			public AtlasIcon icon;
+			public AtlasSprite icon;
 			public UnityEvent onSelect;
 		}
 
-		[SerializeField] private AtlasIcon _icon = AtlasIcon.fill;
+		[SerializeField] private AtlasSprite _icon = AtlasSprite.fill;
 
 		[System.Serializable]
 		private struct Colors

@@ -10,18 +10,21 @@ namespace Smidgenomics.Unity.Console
 	internal class ConsoleTheme : ScriptableObject
 	{
 		public Color BackgroundColor => _windowColors.background;
+		public ThemeConfig.GUIStyles Styles => _styles;
+		public ThemeConfig.WindowColors WindowColors => _windowColors;
 
 		public Color FindColor(int l)
 		{
 			return _logColors.Select(l);
 		}
 
-		[Header("COLORS")]
-		[Expand(label:"Window")]
+		[SerializeField] private ThemeConfig.GUIStyles _styles = default;
+
+		[Expand]
 		[SerializeField]
 		private ThemeConfig.WindowColors _windowColors = ThemeConfig.defaultWindowColors;
 
-		[Expand(label:"Log")]
+		[Expand]
 		[SerializeField]
 		private ThemeConfig.LogColors _logColors = ThemeConfig.defaultLogColors;
 	}

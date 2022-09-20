@@ -298,6 +298,11 @@ namespace Smidgenomics.Unity.Console
 				c.Add(Keyword.LIST, MethodHelper.GetMethod<string>(ListHandlers), this);
 			}
 
+			if (dCommands.HasFlag(DefaultCommand.Clear))
+			{
+				c.Add(Keyword.CLEAR, MethodHelper.GetMethod(Clear), this);
+			}
+
 			if (dCommands.HasFlag(DefaultCommand.Describe))
 			{
 				c.Add(Keyword.HELP, MethodHelper.GetMethod<string>(Describe), this);

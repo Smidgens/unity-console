@@ -22,13 +22,24 @@ namespace Smidgenomics.Unity.Console
 		defaultWindowColors = new WindowColors
 		{
 			background = Color.black * 0.5f,
+			border = Color.black * 1f,
+			scroll = Color.black * 0.5f
 		};
+
+		[Serializable]
+		public struct GUIStyles
+		{
+			public GUIStyle text, input, timestamp;
+		}
+
 
 		[Serializable]
 		internal struct WindowColors
 		{
 			public Color
-			background;
+			background,
+			scroll,
+			border;
 		}
 
 

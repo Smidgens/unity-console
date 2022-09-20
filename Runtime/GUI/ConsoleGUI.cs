@@ -5,17 +5,38 @@ namespace Smidgenomics.Unity.Console
 	using UnityEngine;
 	using System;
 	using System.Collections.Generic;
+	using UnityEngine.Events;
+
+	internal class IconAtlas
+	{
+		private const string RES_PATH = "smidgenomics.console/{icons}";
+		public AtlasSprite shell { get; private set; } = default;
+		public static IconAtlas Instance => _getter.Invoke();
+		private IconAtlas() { }
+		private static Func<IconAtlas> _getter = GetInstanceInit;
+		private static IconAtlas _instance = null;
+
+		private static IconAtlas GetInstance() => _instance;
+		private static IconAtlas GetInstanceInit()
+		{
+			var tex = Resources.Load<Texture>(RES_PATH);
+			_instance = new IconAtlas
+			{
+				shell = new AtlasSprite(tex, Vector2.one, default)
+			};
+			_getter = GetInstance;
+			return _instance;
+		}
+	}
 
 	[AddComponentMenu(Config.AddComponentMenu.CONSOLE_GUI)]
 	internal partial class ConsoleGUI : MonoBehaviour
 	{
 		public const double AREA_PADDING = 2.0;
-		public const float INPUT_AREA_HEIGHT = 30f;
-		public const float TOOLBAR_HEIGHT = 25f;
+		public const float INPUT_AREA_HEIGHT = 50f;
+		public const float TOOLBAR_HEIGHT = 40f;
+		public const float SCROLL_BAR_WIDTH = 12f;
 		public const float AUTO_SCROLL_THRESHOLD = 50f;
-
-		public readonly static Color BORDER_COLOR = Color.black * 1f;
-		public readonly static Color SCROLL_COLOR = Color.black * 0.5f;
 
 		public void Draw()
 		{
@@ -35,10 +56,10 @@ namespace Smidgenomics.Unity.Console
 
 		public void FocusInput(float delay = 0.2f)
 		{
-			this.SetTimeout(delay, FocusInputImmediate);
+			this.SetTimeout(delay, SetInputAsFocus);
 		}
 
-		private void FocusInputImmediate() => _activeFocus = _inputId;
+		private void SetInputAsFocus() => _activeFocus = _inputId;
 
 		public void ClearFocus()
 		{
@@ -51,15 +72,27 @@ namespace Smidgenomics.Unity.Console
 
 		[SerializeField] private ConsoleAsset _console = default;
 		[SerializeField] private ConsoleTheme _themeOverride = default;
+		[SerializeField] private int _depth = 1;
 		[SerializeField] private bool _manualMode = false;
+		[SerializeField] private bool _autoScroll = true;
+		[SerializeField] private bool _blocking = false;
+		[SerializeField] private UnityEvent<Rect> _onToolbarArea = default;
 
 		private static readonly ILazy<ConsoleResources>
 		_RESOURCES = LazyValue.Get(ConsoleResources.GetInstance);
 
-		private static readonly ILazy<ConsoleStyles>
-		_STYLES = LazyValue.Get(GetStyles);
+		private LogState _lastLogState;
 
-		private ConsoleTheme _Theme => _themeOverride ?? _RESOURCES.Value.Theme;
+
+		private struct LogState
+		{
+			public uint lastId;
+			public int lastLength;
+		}
+
+		private ConsoleStyles _STYLES = default;
+
+		private ConsoleTheme _Theme => _themeOverride ?? _RESOURCES.Value.DefaultTheme;
 		private InputHistory _inputLog = new InputHistory();
 		private string _inputId = Guid.NewGuid().ToString();
 		private string _inputValue = "";
@@ -70,6 +103,15 @@ namespace Smidgenomics.Unity.Console
 		private Action _guiFn = NoOp.Action.A0;
 
 		private List<IConsoleWidget> _widgets = new List<IConsoleWidget>();
+
+		private delegate void RectFn(in Rect r);
+
+		private RectFn _toolbarAreaFn = NoOpRect;
+
+		private class Icons
+		{
+			public AtlasSprite shell;
+		}
 
 		private static class ErrMsg
 		{
@@ -91,6 +133,13 @@ namespace Smidgenomics.Unity.Console
 
 		private void Awake()
 		{
+			if(_onToolbarArea.GetPersistentEventCount() > 0)
+			{
+				_toolbarAreaFn = InvokeToolbarHandler;
+			}
+
+			_STYLES = GetStyles();
+
 			foreach (var w in GetComponentsInChildren<IConsoleWidget>())
 			{
 				_widgets.Add(w);
@@ -99,8 +148,8 @@ namespace Smidgenomics.Unity.Console
 
 			_items = new ItemGUI();
 			_items.console = _console;
+			_items.Init(_STYLES);
 
-			_items.Init(_STYLES.Value);
 			_console.Init();
 
 			if (!_manualMode)
@@ -127,18 +176,53 @@ namespace Smidgenomics.Unity.Console
 			FocusInput();
 		}
 
+		private void Update()
+		{
+			CheckScrollState();
+		}
+
 		private void OnGUI()
 		{
+			GUI.depth = _depth;
 			_guiFn.Invoke();
 		}
 
-		private static ConsoleStyles GetStyles()
+		private static void NoOpRect(in Rect r) { }
+
+		private void InvokeToolbarHandler(in Rect r)
 		{
+			_onToolbarArea.Invoke(r);
+		}
+
+		private void CheckScrollState()
+		{
+			var cl = _console.Log.Length;
+			var cid = _console.Log.ID;
+
+			var changed =
+			_lastLogState.lastLength != cl
+			|| _lastLogState.lastId != cid;
+
+			if (changed)
+			{
+				_lastLogState.lastId = cid;
+				_lastLogState.lastLength = cl;
+			}
+
+			if(changed && _autoScroll)
+			{
+				ScrollBottom();
+			}
+		}
+
+		private ConsoleStyles GetStyles()
+		{
+			var thstyles = _Theme.Styles;
 			return new ConsoleStyles
 			(
-				_RESOURCES.Value.Styles.text,
-				_RESOURCES.Value.Styles.input,
-				_RESOURCES.Value.Styles.timestamp
+				thstyles.text,
+				thstyles.input,
+				thstyles.timestamp
 			);
 		}
 
@@ -160,14 +244,17 @@ namespace Smidgenomics.Unity.Console
 			DrawViewport(_layout.Viewport);
 			DrawInput(_layout.Input);
 			DrawScrollbar(_scroll, _layout.Viewport);
-
-			BorderGUI.BorderTop(_layout.Viewport, BORDER_COLOR);
-			BorderGUI.BorderTop(_layout.Input, BORDER_COLOR);
+			BorderGUI.BorderTop(_layout.Viewport, _Theme.WindowColors.border);
+			BorderGUI.BorderTop(_layout.Input, _Theme.WindowColors.border);
 		}
 
 		private void DrawBackground(in Rect pos)
 		{
-			CGUI.Color(pos, _Theme.BackgroundColor);
+			if (_blocking)
+			{
+				GUI.Button(pos, "", GUIStyle.none);
+			}
+			CGUI.Color(pos, _Theme.WindowColors.background);
 		}
 
 		private void DrawViewport(in Rect pos)
@@ -182,6 +269,8 @@ namespace Smidgenomics.Unity.Console
 
 		private void DrawToolbar(in Rect pos)
 		{
+			_toolbarAreaFn.Invoke(pos);
+
 			var area = pos;
 			foreach(var widget in _widgets)
 			{
@@ -201,33 +290,37 @@ namespace Smidgenomics.Unity.Console
 
 				if (placement < 0)
 				{
-					BorderGUI.BorderRight(r, BORDER_COLOR);
+					CGUI.Color(area.SliceLeft(1f), _Theme.WindowColors.border);
+					//BorderGUI.BorderRight(r, _Theme.WindowColors.border);
 				}
 				else
 				{
-					BorderGUI.BorderLeft(r, BORDER_COLOR);
+					CGUI.Color(area.SliceRight(1f), _Theme.WindowColors.border);
+					//BorderGUI.BorderLeft(r, _Theme.WindowColors.border);
 				}
 			}
 		}
 
-		private const string _INPUT_PREFIX = ">";
 		private void DrawInput(in Rect pos)
 		{
 			var area = pos;
-			var ico = area.SliceLeft(area.height * 0.8f);
-			GUI.Label(ico, _INPUT_PREFIX, _STYLES.Value.input);
+			var ico = area.SliceLeft(area.height);
+			var c = ico.center;
+			ico.size *= 0.6f;
+			ico.center = c;
+			IconAtlas.Instance.shell.Draw(ico);
 			GUI.SetNextControlName(_inputId);
-			_inputValue = GUI.TextField(area, _inputValue, _STYLES.Value.input);
+			_inputValue = GUI.TextField(area, _inputValue, _STYLES.input);
 		}
-	
+
 		private void DrawScrollbar(in Vector2 scroll, in Rect pos)
 		{
 			var r = pos;
-			var barArea = r.SliceRight(5f);
+			var barArea = r.SliceRight(SCROLL_BAR_WIDTH);
 
 			var th = _items.TotalHeight;
 
-			BorderGUI.BorderLeft(barArea, BORDER_COLOR);
+			BorderGUI.BorderLeft(barArea, _Theme.WindowColors.border);
 			if(th < pos.height)
 			{
 				return;
@@ -237,7 +330,7 @@ namespace Smidgenomics.Unity.Console
 			var knob = barArea;
 			knob.height *= t;
 			knob.y += ts * pos.height;
-			CGUI.Color(knob, SCROLL_COLOR);
+			CGUI.Color(knob, _Theme.WindowColors.scroll);
 		}
 
 		private void CycleInputs(int direction)
@@ -541,7 +634,7 @@ namespace Smidgenomics.Unity.Console
 
 			public static void SetFocus(string id)
 			{
-				if (Event.current == null || string.IsNullOrEmpty(id)) { return; }
+				if (Event.current == null) { return; }
 				GUI.FocusControl(id);
 			}
 		}
