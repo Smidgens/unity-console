@@ -1,6 +1,6 @@
 {
 	"name":"com.smidgenomics.unity-console",
-	"version":"0.1.0",
+	"version":"0.4.0",
 	"displayName":"Console",
 	"description":"Runtime Developer Console.",
 	"repository": {
