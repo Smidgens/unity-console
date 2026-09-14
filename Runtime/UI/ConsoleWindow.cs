@@ -2,6 +2,7 @@
 
 namespace Smidgenomics.Unity.Console
 {
+	using System;
 	using System.Collections.Generic;
 	using global::Unity.Properties;
 	using UnityEngine;
@@ -9,10 +10,12 @@ namespace Smidgenomics.Unity.Console
 
 	[UxmlElement("ConsoleWindow", libraryPath = "Console")]
 	[Icon("UIToolkit/Icons/Button.png")]
-	internal sealed partial class ConsoleWindow : VisualElement
+	public sealed partial class ConsoleWindow : VisualElement
 	{
 		[UxmlAttribute("console-asset")]
 		internal ConsoleAsset Console { get; set; }
+
+		internal VisualElement Toolbar { get; private set; }
 
 		public ConsoleWindow()
 		{
@@ -24,6 +27,25 @@ namespace Smidgenomics.Unity.Console
 			template.CloneTree(this);
 			RegisterCallback<AttachToPanelEvent>(OnAttached);
 			RegisterCallback<DetachFromPanelEvent>(OnDetached);
+		}
+
+		public void AddToolbarItem(VisualElement visualElement)
+		{
+			if (Toolbar == null)
+			{
+#if SM_DEV
+				if (Application.isPlaying)
+				{
+					Debug.Log("Console toolbar is null in play mode");
+					return;
+				}
+#endif
+				// should only be possible outside play mode
+				return;
+			}
+			visualElement.AddToClassList("sm-console__toolbar__item--left");
+			var container = Toolbar.Q(name: "LeftControls");
+			container.Add(visualElement);
 		}
 
 		private bool _moused;
@@ -135,6 +157,8 @@ namespace Smidgenomics.Unity.Console
 		{
 			if (Application.isPlaying && Console)
 			{
+				Toolbar = this.Q(name: "Toolbar");
+
 				_input = this.Q<TextField>();
 				_logList = this.Q<ListView>();
 				_closeButton = this.Q<Button>(name: "Close");
