@@ -14,6 +14,7 @@ namespace Smidgenomics.Unity.Console
 	[AddComponentMenu(ConsoleConstants.COMPONENT_ROOT + "Console UI")]
 	[DisallowMultipleComponent]
 	[RequireComponent(typeof(UIDocument))]
+	[Obsolete("Use ConsoleWindow element in UXML")]
 	internal sealed class ConsoleUI : BaseMono
 	{
 		[SerializeField] private ConsoleAsset _console;
