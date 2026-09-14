@@ -5,9 +5,7 @@ namespace Smidgenomics.Unity.Console
 	using UnityEngine;
 	using System.Reflection;
 
-#if !CONSOLE_DISABLE_CM
-	[CreateAssetMenu(menuName = ConsoleConstants.CREATE_MENU_ROOT + "Console")]
-#endif
+	[CreateAssetMenu(menuName = ConsoleConstants.CREATE_MENU_ROOT + "Console Asset")]
 	[ExcludeFromPreset]
 	public sealed class ConsoleAsset : BaseSO, IConsole
 	{
