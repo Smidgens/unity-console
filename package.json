@@ -1,21 +1,22 @@
 {
-	"name":"com.smidgenomics.unity-console",
-	"version":"0.4.0",
-	"displayName":"SM Console",
-	"description":"Runtime Dev Console",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/Smidgens/unity-console.git"
-	},
-	"author":{
-		"name":"Smidgenomics",
-		"url":"https://github.com/Smidgens"
-	},
-	"keywords":[
-		"console",
-		"unity-console",
-		"dev-console",
-		"runtime-console",
-		"smidgenomics"
-	]
+  "name": "com.smidgenomics.unity-console",
+  "version": "0.4.0",
+  "displayName": "SM Console",
+  "description": "Runtime Dev Console",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Smidgens/unity-console.git"
+  },
+  "author": {
+    "name": "Smidgenomics",
+    "url": "https://github.com/Smidgens"
+  },
+  "keywords": [
+    "console",
+    "unity-console",
+    "dev-console",
+    "runtime-console",
+    "smidgenomics"
+  ],
+  "unity": "2023.3"
 }

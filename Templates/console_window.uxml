@@ -1,0 +1,11 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="console_input" src="project://database/Packages/com.smidgenomics.unity-console/Templates/console_input.uxml?fileID=9197481963319205126&amp;guid=cdf158ca63b372c439831f7f7b1a2549&amp;type=3#console_input"/>
+    <ui:Template name="console_log" src="project://database/Packages/com.smidgenomics.unity-console/Templates/console_log.uxml?fileID=9197481963319205126&amp;guid=7dc40cffbc4c0ac4aa15cea172994131&amp;type=3#console_log"/>
+    <ui:Template name="console_toolbar" src="project://database/Packages/com.smidgenomics.unity-console/Templates/console_toolbar.uxml?fileID=9197481963319205126&amp;guid=202e0fb9a09d8f7439b905bb4dfcd4c8&amp;type=3#console_toolbar"/>
+    <Style src="project://database/Packages/com.smidgenomics.unity-console/Templates/console_window.uss?fileID=7433441132597879392&amp;guid=d621aeb7e3c85c44ea1338b167019c8c&amp;type=3#console_window"/>
+    <ui:VisualElement name="Window" class="sm-console__window">
+        <ui:Instance template="console_toolbar" name="ToolbarWrapper" class="sm-console__window__row"/>
+        <ui:ListView item-template="console_log" virtualization-method="DynamicHeight" selection-type="None" binding-source-selection-mode="AutoAssign" allow-remove="false" allow-add="false" show-bound-collection-size="false" name="Logs" class="sm-console__loglist"/>
+        <ui:Instance template="console_input" name="InputWrapper" class="sm-console__window__row"/>
+    </ui:VisualElement>
+</ui:UXML>

@@ -41,19 +41,18 @@ namespace Smidgenomics.Unity.Console
 					cmd.Bind(c._console);
 				}
 			}
-
-			c._console.AddLog("Console initialized", ELogType.Info);
+			c._console.LogInfo("Console initialized");
 			_initFn = NoOp;
 		}
 
-		public CommandHandle Add(string cName, MemberInfo p, object ctx, string description)
+		public CommandHandle Bind(string cName, MemberInfo p, object ctx, string description)
 		{
-			return _console.Add(cName, p, ctx, description);
+			return _console.Bind(cName, p, ctx, description);
 		}
 
-		public void Remove(in CommandHandle cmd)
+		public void Unbind(in CommandHandle cmd)
 		{
-			_console.Remove(cmd);
+			_console.Unbind(cmd);
 		}
 
 		internal void Clear()

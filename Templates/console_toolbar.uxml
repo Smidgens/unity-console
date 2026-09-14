@@ -1,0 +1,10 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.smidgenomics.unity-console/Templates/console_toolbar.uss?fileID=7433441132597879392&amp;guid=8d8ebdf3540f6d5418f8bc0fca2c6112&amp;type=3#console_toolbar"/>
+    <ui:VisualElement name="Toolbar" class="sm-console__toolbar">
+        <ui:VisualElement name="LeftControls" style="flex-grow: 0;"/>
+        <ui:VisualElement name="Flex" style="flex-grow: 1;"/>
+        <Smidgenomics.Unity.Console.ConsoleFilters name="Filters" class="sm-console__toolbar__item--right"/>
+        <Smidgenomics.Unity.Console.ConsoleButton name="Clear" icon-image="project://database/Packages/com.smidgenomics.unity-console/Resources/smidgenomics.console/{sm_console}.png" u-v="0,0.5,0.25,0.25" class="sm-console__toolbar__item--right"/>
+        <Smidgenomics.Unity.Console.ConsoleButton name="Close" icon-image="project://database/Packages/com.smidgenomics.unity-console/Resources/smidgenomics.console/{sm_console}.png" u-v="0.25,0.75,0.25,0.25" class="sm-console__toolbar__item--right"/>
+    </ui:VisualElement>
+</ui:UXML>

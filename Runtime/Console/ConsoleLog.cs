@@ -25,8 +25,6 @@ namespace Smidgenomics.Unity.Console
 			return _items[i];
 		}
 
-		public ConsoleLogItem this[int i] => GetItemAt(i);
-
 		public void Append(string text, ELogType type = 0, long category = 0)
 		{
 			var log = new ConsoleLogItem(text, DateTime.Now, type, category);

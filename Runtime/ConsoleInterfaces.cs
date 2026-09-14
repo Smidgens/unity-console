@@ -8,16 +8,27 @@ namespace Smidgenomics.Unity.Console
 	{
 		public IConsoleLog Log { get; }
 
+		/// <summary>
+		/// Execute input
+		/// </summary>
 		public void Exec(string input);
 
-		public CommandHandle Add
+		/// <summary>
+		/// Bind class member
+		/// </summary>
+		/// <exception cref="ConsoleBindingException">Cannot bind member</exception>
+		public CommandHandle Bind
 		(
 			string name,
 			MemberInfo p,
 			object ctx,
 			string description
 		);
-		public void Remove(in CommandHandle cmd);
+		
+		/// <summary>
+		/// Unbind command
+		/// </summary>
+		public void Unbind(in CommandHandle cmd);
 	}
 }
 

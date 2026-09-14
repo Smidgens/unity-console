@@ -24,6 +24,20 @@ namespace Smidgenomics.Unity.Console
 
 namespace Smidgenomics.Unity.Console
 {
+	/// <summary>
+	/// Broad categories for log filtering
+	/// </summary>
+	[System.Flags]
+	internal enum ELogTypeFlags
+	{
+		Log = 1,
+		Warning = 2,
+		Error = 4,
+	}
+}
+
+namespace Smidgenomics.Unity.Console
+{
 	using System;
 	using UnityEngine;
 

@@ -8,6 +8,7 @@
 	height:var(--sm-console-toolbar-height, 50px);
 	min-height:var(--sm-console-toolbar-height, 50px);
 	--sm-console-font-default:resource("smidgenomics.console/{inconsolata}");
+	--sm-console__button-hover-color-default:#fff1;
 }
 
 .sm-console__toolbar__button {
@@ -18,8 +19,27 @@
 	margin:0;
 	background-color:transparent;
 	border-width: 0;
-	opacity:0.8;
+	
 }
+
+.sm-console__toolbar__item .unity-image {
+	opacity:0.5;
+}
+
+.sm-console__toolbar__item:hover .unity-image {
+	opacity:1;
+}
+
+/* toolbar item hovered */
+.sm-console__toolbar__item:hover {
+	background-color:var(--sm-console__button-hover-color, var(--sm-console__button-hover-color-default));
+}
+
+/* light up control when active */
+.sm-console__toolbar__filter--active .unity-image {
+	opacity:1;
+}
+
 
 /* right floating controls */
 .sm-console__toolbar__item--right {
@@ -37,43 +57,30 @@
 	display: flex;
 	flex-direction: row;
 	-unity-font-definition: var(--sm-console-font, var(--sm-console-font-default));
-	font-size: var(--sm-console-log-font-size, 25px);
+	font-size: var(--sm-console-log-font-size, 20px);
 	color:white;
 }
 
+.sm-console__toolbar__filter:hover {
+	background-color:var(--sm-console__button-hover-color, var(--sm-console__button-hover-color-default));
+}
+
+
+.sm-console__toolbar__filter:hover .sm-console__toolbar__filter__icon {
+	opacity:1;
+}
+
 .sm-console__toolbar__filter__label {
-	font-size: var(--sm-console-log-font-size, 25px);
+	font-size: var(--sm-console-filter-font-size, 20px);
 	-unity-text-align: middle-center;
 }
 
-.sm-console__toolbar__filter__dropdown {
-	margin:0;
-	padding:0;
+.sm-console__toolbar__filter__label--empty {
+	display: none;
 }
 
 .sm-console__toolbar__filter__icon {
 	height:var(--sm-console-toolbar-height, 50px);
 	aspect-ratio:1;
 	padding:var(--sm-console-toolbar-spacing, 10px);
-	opacity:0.5;
 }
-
-.sm-console__toolbar__filter__dropdown .unity-base-field__input {
-	margin:0;
-	background-color:transparent;
-	border-width:0;
-}
-
-.sm-console__toolbar__filter__dropdown .unity-text-element {
-	background-color:transparent;
-}
-
-.sm-console__toolbar__filter__dropdown .unity-base-dropdown__container-inner {
-	background-color:transparent;
-}
-
-/* button hovered */
-.sm-console__toolbar__button:hover {
-	background-color:#fff1;
-}
-

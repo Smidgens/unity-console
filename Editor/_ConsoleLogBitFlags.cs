@@ -89,7 +89,7 @@ namespace Smidgenomics.Unity.Console.Editor
 				var indexRect = iRow.SliceLeft(iRow.height * 1.5f);
 
 				// var bitLabel = (1 << i).ToString();
-				var bitLabel = i.ToString();
+				var bitLabel = $"2^{i}";
 				GUI.Label(indexRect, bitLabel, EditorStyles.miniLabel);
 
 				var rmButtonRect = iRow.SliceRight(btnSize.x);

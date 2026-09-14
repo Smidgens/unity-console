@@ -36,7 +36,7 @@ namespace Smidgenomics.Unity.Console
 			HandleInput(input);
 		}
 
-		public void Remove(in CommandHandle key)
+		public void Unbind(in CommandHandle key)
 		{
 			if (!_handlerInfos.Remove(key, out var info))
 			{
@@ -54,7 +54,7 @@ namespace Smidgenomics.Unity.Console
 			}
 		}
 		
-		public CommandHandle Add
+		public CommandHandle Bind
 		(
 			string name,
 			MemberInfo mi,
@@ -247,7 +247,7 @@ namespace Smidgenomics.Unity.Console
 		{
 			foreach(var cc in ConsoleHelper.FindConsoleCallables())
 			{
-				Add(cc.keyword, cc.member, null, cc.description);
+				Bind(cc.keyword, cc.member, null, cc.description);
 			}
 		}
 
@@ -255,32 +255,32 @@ namespace Smidgenomics.Unity.Console
 		{
 			if (flags.HasFlag(EDefaultConsoleCommand.List))
 			{
-				Add(Keyword.LIST, GetMethod(ListHandlers), this);
+				Bind(Keyword.LIST, GetMethod(ListHandlers), this);
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.ListWildcard))
 			{
-				Add(Keyword.LIST, GetMethod<string>(ListHandlers), this);
+				Bind(Keyword.LIST, GetMethod<string>(ListHandlers), this);
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Clear))
 			{
-				Add(Keyword.CLEAR, GetMethod(Clear), this);
+				Bind(Keyword.CLEAR, GetMethod(Clear), this);
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Describe))
 			{
-				Add(Keyword.HELP, GetMethod<string>(Describe), this);
+				Bind(Keyword.HELP, GetMethod<string>(Describe), this);
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Inspect))
 			{
-				Add(Keyword.INSPECT, GetMethod<string>(Inspect), this);
+				Bind(Keyword.INSPECT, GetMethod<string>(Inspect), this);
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Exec))
 			{
-				Add(Keyword.RUN_SCRIPT, GetMethod<string>(RunScript), this);
+				Bind(Keyword.RUN_SCRIPT, GetMethod<string>(RunScript), this);
 			}
 		}
 

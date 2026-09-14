@@ -23,7 +23,7 @@ namespace Smidgenomics.Unity.Console
 		public void Unbind()
 		{
 			if (!IsBound) { return; }
-			_console.Remove(_handle);
+			_console.Unbind(_handle);
 			_console = null;
 		}
 
@@ -116,12 +116,12 @@ namespace Smidgenomics.Unity.Console
 			{
 				throw new ConsoleException("Error binding command handler");
 			}
-			return c.Add(keyword, p, _handler.Target, _description);
+			return c.Bind(keyword, p, _handler.Target, _description);
 		}
 
 		private CommandHandle BindAsMethod(IConsole c, string keyword, MethodInfo m)
 		{
-			return c.Add(keyword, m, _handler.Target, _description);
+			return c.Bind(keyword, m, _handler.Target, _description);
 		}
 	}
 }

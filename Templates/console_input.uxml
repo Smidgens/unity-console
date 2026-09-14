@@ -1,0 +1,7 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="./console_input.uss?fileID=7433441132597879392&amp;guid=2dede0448de19464fac544be6901686d&amp;type=3#console_input"/>
+    <ui:VisualElement name="Input" class="sm-console__input">
+        <ui:Image source="project://database/Packages/com.smidgenomics.unity-console/Resources/smidgenomics.console/{sm_console}.png" uv="0,0.75,0.25,0.25" name="Icon" class="sm-console__input__icon"/>
+        <ui:TextField placeholder-text="" name="Field" value="" select-all-on-mouse-up="false" class="sm-console__input__field"/>
+    </ui:VisualElement>
+</ui:UXML>

@@ -4,17 +4,41 @@ namespace Smidgenomics.Unity.Console
 {
 	using System;
 	using System.Collections.Generic;
-	using global::Unity.Properties;
 	using UnityEngine;
 	using UnityEngine.UIElements;
 
-	[UxmlElement("ConsoleWindow", libraryPath = "Console")]
+	[UxmlElement("Window", libraryPath = "Console")]
 	[Icon("UIToolkit/Icons/Button.png")]
 	public sealed partial class ConsoleWindow : VisualElement
 	{
+		public event Action onClosePressed;
+
+		public bool ShowCloseButton
+		{
+			get => _closeButton?.visible ?? false;
+			set
+			{
+				if (_closeButton != null)
+				{
+					_closeButton.visible = value;
+				}
+			}
+		}
+
+		public bool ShowClearButton
+		{
+			get => _clearButton?.visible ?? false;
+			set
+			{
+				if (_clearButton != null)
+				{
+					_clearButton.visible = value;
+				}
+			}
+		}
+
 		[UxmlAttribute("console-asset")]
 		internal ConsoleAsset Console { get; set; }
-
 		internal VisualElement Toolbar { get; private set; }
 
 		public ConsoleWindow()
@@ -27,6 +51,11 @@ namespace Smidgenomics.Unity.Console
 			template.CloneTree(this);
 			RegisterCallback<AttachToPanelEvent>(OnAttached);
 			RegisterCallback<DetachFromPanelEvent>(OnDetached);
+		}
+
+		public void ResetFilters()
+		{
+			_filters.ResetFilters();
 		}
 
 		public void AddToolbarItem(VisualElement visualElement)
@@ -51,8 +80,9 @@ namespace Smidgenomics.Unity.Console
 		private bool _moused;
 		private TextField _input;
 		private ListView _logList;
-		private Button _closeButton;
-		private ConsoleLogFilters _filters;
+		private ConsoleButton _closeButton;
+		private ConsoleButton _clearButton;
+		private ConsoleFilters _filters;
 		private readonly InputHistory _inputHistory = new ();
 		private readonly List<ConsoleLogItem> _filteredLogs = new();
 
@@ -62,7 +92,7 @@ namespace Smidgenomics.Unity.Console
 
 		private bool IsFiltering()
 		{
-			return false;
+			return _filtersActive;
 		}
 
 		private void BindEvents()
@@ -73,7 +103,16 @@ namespace Smidgenomics.Unity.Console
 			Console.Log.onLogsCleared -= OnLogCleared;
 			Console.Log.onLogsCleared += OnLogCleared;
 
-			_closeButton.clicked += OnClose;
+			if (_closeButton != null)
+			{
+				_closeButton.clicked += OnCloseButton;
+			}
+
+			if (_clearButton != null)
+			{
+				_clearButton.clicked += OnClearButton;
+			}
+
 			// cycle input history
 			_input.RegisterCallback<KeyDownEvent>(OnInputKeyDown, TrickleDown.TrickleDown);
 			// handle submit
@@ -86,18 +125,25 @@ namespace Smidgenomics.Unity.Console
 			{
 				return;
 			}
-			_logList.bindItem = BindLogItem;
-			_logList.itemsSource = Console.Log.LogList;
+
+			_logList.itemsSource = _filtersActive
+			? _filteredLogs
+			: Console.Log.LogList;
 		}
 
-		private void OnClose()
+		private void OnClearButton()
 		{
-			// how should this work?
+			Console?.Clear();
+		}
+
+		private void OnCloseButton()
+		{
+			onClosePressed?.Invoke();
 		}
 
 		private void OnLogCleared()
 		{
-			if (_filtersActive)
+			if (_filters.Value.IsSet())
 			{
 				_filteredLogs.Clear();
 			}
@@ -108,22 +154,15 @@ namespace Smidgenomics.Unity.Console
 			var prevActive = _filtersActive;
 			_filtersActive = filter.IsSet();
 
-			if (prevActive && !_filtersActive)
-			{
-				_filtersActive = false;
-				_logList.itemsSource = Console.Log.LogList;
-			}
-
-			if (!prevActive && _filtersActive)
-			{
-				_logList.itemsSource = _filteredLogs;
-			}
-
 			if (_filtersActive)
 			{
 				InitFilteredList();
 			}
-			
+
+			if (_filtersActive != prevActive)
+			{
+				BindList();
+			}
 		}
 
 		private void InitFilteredList()
@@ -138,10 +177,15 @@ namespace Smidgenomics.Unity.Console
 					_filteredLogs.Add(item);
 				}
 			}
+			_logList.Rebuild();
 		}
 
 		private void OnLogAdded(in ConsoleLogItem item)
 		{
+			if (!visible)
+			{
+				// TODO: do nothing if invisible and add new items when window is shown
+			}
 			if (!IsFiltering())
 			{
 				return;
@@ -158,11 +202,11 @@ namespace Smidgenomics.Unity.Console
 			if (Application.isPlaying && Console)
 			{
 				Toolbar = this.Q(name: "Toolbar");
-
 				_input = this.Q<TextField>();
 				_logList = this.Q<ListView>();
-				_closeButton = this.Q<Button>(name: "Close");
-				_filters = this.Q<ConsoleLogFilters>();
+				_closeButton = this.Q<ConsoleButton>(name: "Close");
+				_clearButton = this.Q<ConsoleButton>(name: "Clear");
+				_filters = this.Q<ConsoleFilters>();
 				_filters.SetConsole(Console);
 				_filters.onChange += OnFiltersChanged;
 
@@ -171,10 +215,8 @@ namespace Smidgenomics.Unity.Console
 				RegisterCallback<MouseEnterEvent>(OnMouseEnter);
 				RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
 				RegisterCallback<FocusEvent>(OnFocus);
-				
 				Console.Clear();
 				Console.Init();
-
 				if (panel != null)
 				{
 					_boundRoot = panel.visualTree;
@@ -195,7 +237,6 @@ namespace Smidgenomics.Unity.Console
 				{
 					_boundRoot.styleSheets.Remove(ConsoleResources.GetInstance()._rootStyleSheet);
 				}
-				// UnregisterAllRemovableCallbacks();
 			}
 		}
 
@@ -212,16 +253,31 @@ namespace Smidgenomics.Unity.Console
 				return;
 			}
 			_moused = true;
-			FocusInput();
-			ScrollToEnd();
+			OnShowConsole();
 		}
 
 		private void OnMouseLeave(MouseLeaveEvent ev)
 		{
 			if (!visible)
 			{
+				var prevMoused = _moused;
 				_moused = false;
+				if (prevMoused)
+				{
+					OnHideConsole();
+				}
 			}
+		}
+
+		private void OnShowConsole()
+		{
+			FocusInput();
+			ScrollToEnd();
+		}
+
+		private void OnHideConsole()
+		{
+			// _logList.dataSource = null;
 		}
 
 		private void OnInputKeyDown(KeyDownEvent ev)
@@ -272,13 +328,6 @@ namespace Smidgenomics.Unity.Console
 			{
 				_logList.ScrollToItem(Console.Log.Length - 1);
 			}
-		}
-
-		private void BindLogItem(VisualElement el, int i)
-		{
-			var item = Console.Log.GetItemAt(i);
-			el.dataSource = item;
-			el.viewDataKey = i.ToString();
 		}
 		
 	}

@@ -6,9 +6,9 @@ namespace Smidgenomics.Unity.Console
 	using UnityEngine;
 	using UnityEngine.UIElements;
 
-	[UxmlElement("ToolbarButton", libraryPath = "Console")]
+	[UxmlElement("Button", libraryPath = "Console")]
 	[Icon("UIToolkit/Icons/Button.png")]
-	internal sealed partial class ConsoleToolbarButton : Button
+	internal sealed partial class ConsoleButton : Button
 	{
 		[UxmlAttribute]
 		[CreateProperty]
@@ -29,7 +29,7 @@ namespace Smidgenomics.Unity.Console
 			}
 		}
 
-		public ConsoleToolbarButton()
+		public ConsoleButton()
 		{
 			AddToClassList("sm-console__toolbar__button");
 			AddToClassList("sm-console__toolbar__item");

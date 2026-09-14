@@ -17,6 +17,21 @@ namespace Smidgenomics.Unity.Console
 
 		internal readonly bool Filter(in ConsoleLogFilter filter)
 		{
+			// type filter is set
+			if (filter.types != 0 && (filter.types & GetTypeFlag()) == 0)
+			{
+				return false;
+			}
+
+			if (filter.flags == 0) // a special case, we treat the flags as "unset"
+			{
+				return true;
+			}
+			
+			if (filter.matchAll)
+			{
+				return (filter.flags & flags) == filter.flags;
+			}
 			return (filter.flags & flags) != 0;
 		}
 
@@ -36,6 +51,16 @@ namespace Smidgenomics.Unity.Console
 		/// Category bitmask, can be used for filtering
 		/// </summary>
 		public readonly long flags;
+		
+		private readonly int GetTypeFlag()
+		{
+			return type switch
+			{
+				ELogType.Warning => (int)ELogTypeFlags.Warning,
+				ELogType.Error => (int)ELogTypeFlags.Error,
+				_ => (int)ELogTypeFlags.Log,
+			};
+		}
 
 		public ConsoleLogItem(string t, DateTime date, ELogType type = 0, long flags = 0)
 		{
@@ -55,13 +80,24 @@ namespace Smidgenomics.Unity.Console
 	{
 		public readonly bool IsSet()
 		{
-			return flags != ~0;
+			return flags != 0 || types != 0;
 		}
 
+		public void Reset()
+		{
+			flags = 0;
+			types = 0;
+			matchAll = false;
+		}
+
+		// convenience factory in case the defaults change
 		public static readonly ConsoleLogFilter Default = new()
 		{
-			flags = ~0
+			flags = 0,
 		};
+
+		public int types;
+		public bool matchAll;
 		public long flags;
 	}
 }
