@@ -4,20 +4,21 @@
 	display:flex;
 	flex-direction:row;
 	padding:0;
+	--sm-console-font-default:resource("smidgenomics.console/{inconsolata}");
 }
 
 /* any label */
 .sm-console__log__label {
 	color:white;
 	font-size: var(--sm-console-log-font-size, 25px);
-	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	-unity-font-definition: var(--sm-console-font, var(--sm-console-font-default));
 }
 
 /* log date */
 .sm-console__log__time {
 	flex-grow:0;
-	margin-left:var(--sm-console-spacing, var(--sm-console-default-spacing, 5px));
-	margin-right:var(--sm-console-spacing, var(--sm-console-default-spacing, 5px));
+	margin-left:var(--sm-console-spacing, var(--sm-console-spacing-default, 5px));
+	margin-right:var(--sm-console-spacing, var(--sm-console-spacing-default, 5px));
 	padding:0;
 }
 

@@ -1,9 +1,12 @@
 
+:root {
+	--sm-console-font-default:resource("smidgenomics.console/{inconsolata}");
+}
+
 .sm-console__dropdown-menu__root {
-	
 	--divider-color:#fff7;
 	/* */
-	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	-unity-font-definition: var(--sm-console-font, var(--sm-console-font-default));
 	background-color: #0003;
 	color:white;
 }

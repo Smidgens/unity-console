@@ -1,12 +1,13 @@
 
 .sm-console__toolbar {
-	border-color:var(--sm-console-divider-color, var(--sm-console-default-divider-color, white));
+	border-color:var(--sm-console-divider-color, var(--sm-console-divider-color-default, white));
 	border-bottom-width: 1px;
 	display: flex;
 	flex-grow:0;
 	flex-direction: row;
 	height:var(--sm-console-toolbar-height, 50px);
 	min-height:var(--sm-console-toolbar-height, 50px);
+	--sm-console-font-default:resource("smidgenomics.console/{inconsolata}");
 }
 
 .sm-console__toolbar__button {
@@ -20,10 +21,22 @@
 	opacity:0.8;
 }
 
+/* right floating controls */
+.sm-console__toolbar__item--right {
+	border-color: var(--sm-console-divider-color, var(--sm-console-divider-color-default, white));
+	border-left-width: 1px;
+}
+
+/* left floating controls */
+.sm-console__toolbar__item--left {
+	border-color: var(--sm-console-divider-color, var(--sm-console-divider-color-default, white));
+	border-right-width: 1px;
+}
+
 .sm-console__toolbar__filter {
 	display: flex;
 	flex-direction: row;
-	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	-unity-font-definition: var(--sm-console-font, var(--sm-console-font-default));
 	font-size: var(--sm-console-log-font-size, 25px);
 	color:white;
 }
@@ -40,16 +53,9 @@
 
 .sm-console__toolbar__filter__icon {
 	height:var(--sm-console-toolbar-height, 50px);
-	/*width:var(--sm-console-toolbar-height, 50px);*/
 	aspect-ratio:1;
-	/*padding:10%;*/
 	padding:var(--sm-console-toolbar-spacing, 10px);
 	opacity:0.5;
-}
-
-.sm-console__dropdown-menu {
-	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
-	color:red;
 }
 
 .sm-console__toolbar__filter__dropdown .unity-base-field__input {
@@ -59,7 +65,6 @@
 }
 
 .sm-console__toolbar__filter__dropdown .unity-text-element {
-	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
 	background-color:transparent;
 }
 
@@ -67,19 +72,8 @@
 	background-color:transparent;
 }
 
-.sm-console__toolbar__filter__dropdown .unity-base-dropdown__container-outer {
-	background-color:transparent;
-	border-color:red;
-}
-
-
 /* button hovered */
 .sm-console__toolbar__button:hover {
 	background-color:#fff1;
 }
 
-/* right floating items */
-.sm-console__toolbar__item--right {
-	border-color: var(--sm-console-divider-color, var(--sm-console-default-divider-color, white));
-	border-left-width: 1px;
-}

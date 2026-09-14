@@ -4,19 +4,20 @@
 	/*flex-grow: 0;*/
 	display: flex;
 	flex-direction: row;
-	border-color: var(--sm-console-divider-color, var(--sm-console-default-divider-color, white));
+	border-color: var(--sm-console-divider-color, var(--sm-console-divider-color-default, white));
 	border-top-width: 1px;
 	height: var(--sm-console-input-height, 70px);
 	min-height:0;
 	max-height: var(--sm-console-input-height, 70px);
 	padding: 0;
 	background-color: rgba(0, 0, 0, 0.533);
+	--sm-console-rounding-default:3px;
+	--sm-console-font-default:resource("smidgenomics.console/{inconsolata}");
 }
 
 .sm-console__input__icon {
 	aspect-ratio: 1;
 	opacity: 0.3;
-	/*padding: var(--sm-console-spacing, var(--sm-console-default-spacing, 5px));*/
 }
 
 .sm-console__input__field {
@@ -34,28 +35,28 @@
 }
 
 .sm-console__input__field .unity-text-element {
-	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	-unity-font-definition: var(--sm-console-font, var(--sm-console-font-default));
 	font-size: var(--sm-console-input-font-size, 25px);
 }
 
 .sm-console__input__field .unity-text-element__selectable {
 	border-width: 1px;
 	padding: 0;
-	border-radius: 3px;
 	margin: 0;
-	padding-left: var(--console-input-spacing, 10px);
+	border-radius: var(--sm-console-rounding, var(--sm-console-rounding-default));
+	padding-left: var(--sm-console-input-spacing, 10px);
 }
 
 .sm-console__input__field .unity-base-field__input {
-	padding: var(--sm-console-spacing, var(--sm-console-default-spacing, 5px));
+	padding: var(--sm-console-spacing, var(--sm-console-spacing-default, 5px));
 }
 
 .sm-console__input__field .unity-text-element__selectable:hover {
-	border-color: rgba(255, 255, 255, 0.2);
+	border-color: #fff5;
 }
 
 .sm-console__input__field .unity-text-element__selectable:focus {
-	border-color: cyan;
+	border-color: var(--sm-console-focus-color, cyan);
 }
 
 

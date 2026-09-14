@@ -4,7 +4,7 @@
     <ui:Template name="console_toolbar" src="console_toolbar.uxml"/>
     <Style src="console_window.uss"/>
     <ui:VisualElement name="Window" class="sm-console__window">
-        <ui:Instance template="console_toolbar" name="Toolbar" class="sm-console__window__row"/>
+        <ui:Instance template="console_toolbar" name="ToolbarWrapper" class="sm-console__window__row"/>
         <ui:ListView item-template="console_log" virtualization-method="DynamicHeight" selection-type="None" binding-source-selection-mode="AutoAssign" allow-remove="false" allow-add="false" show-bound-collection-size="false" name="Logs" class="sm-console__loglist"/>
         <ui:Instance template="console_input" name="Input" class="sm-console__window__row"/>
     </ui:VisualElement>
