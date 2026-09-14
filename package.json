@@ -1,14 +1,14 @@
 {
 	"name":"com.smidgenomics.unity-console",
 	"version":"0.4.0",
-	"displayName":"Console",
-	"description":"Runtime Developer Console.",
+	"displayName":"SM Console",
+	"description":"Runtime Dev Console",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Smidgens/unity-console.git"
 	},
 	"author":{
-		"name":"Unnar Krist",
+		"name":"Smidgenomics",
 		"url":"https://github.com/Smidgens"
 	},
 	"keywords":[

@@ -1,0 +1,70 @@
+
+:root {
+	--sm-console-default-divider-color:#fff9;
+	--sm-console-default-spacing:5px;
+}
+
+/*=================================*/
+/*=========== WINDOW ==============*/
+/*=================================*/
+
+.sm-console__window {
+	color:white;
+	position:absolute;
+	width:100%;
+	height:100%;
+	background-color:var(--sm-console-bg-color, #000b);
+	display:flex;
+	flex-direction: column;
+	/*flex-grow:1;*/
+	border-color:var(--sm-console-divider-color, var(--sm-console-default-divider-color));
+	border-width: 1px;
+}
+
+/* wrapper around instances */
+.sm-console__window__row {
+	flex-grow:0;
+	flex-shrink:0;
+}
+
+/*=================================*/
+/*========== LOG LIST =============*/
+/*=================================*/
+
+.sm-console__loglist {
+	flex-grow:1;
+}
+
+.sm-console__loglist .unity-list-view__item {
+	margin:0;
+	padding:0;
+}
+
+/* Remove hover effect on list view items */
+.sm-console__loglist .unity-list-view__item:hover {
+	background-color:transparent;
+}
+
+/* hide empty label in list view */
+.sm-console__loglist .unity-list-view__empty-label {
+	display: none;
+}
+
+/* tweak scrollbar buttons */
+.sm-console__loglist .unity-repeat-button {
+	background-color:transparent;
+	-unity-background-image-tint-color: var(--sm-console-divider-color, var(--sm-console-default-divider-color));
+}
+
+/* tweak scrollbar area */
+.sm-console__loglist .unity-base-slider__tracker {
+	background-color:transparent;
+	border-width: 0;
+	border-left-color: var(--sm-console-divider-color, var(--sm-console-default-divider-color));
+	border-left-width: 1px;
+}
+
+/* tweak scrollbar handle */
+.sm-console__loglist .unity-base-slider__dragger {
+	background-color:var(--sm-console-divider-color, var(--sm-console-default-divider-color));
+}

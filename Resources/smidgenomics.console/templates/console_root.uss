@@ -1,0 +1,21 @@
+
+.sm-console__dropdown-menu__root {
+	
+	--divider-color:#fff7;
+	/* */
+	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	background-color: #0003;
+	color:white;
+}
+.sm-console__dropdown-menu__root .unity-base-dropdown__separator {
+	background-color:var(--divider-color, white);
+}
+
+.sm-console__dropdown-menu__root .unity-base-dropdown__checkmark {
+	-unity-background-image-tint-color: white;
+}
+
+.sm-console__dropdown-menu__container {
+	border-color:var(--divider-color, white);
+	border-radius:3px;
+}

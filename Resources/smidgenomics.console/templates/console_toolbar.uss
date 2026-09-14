@@ -1,0 +1,85 @@
+
+.sm-console__toolbar {
+	border-color:var(--sm-console-divider-color, var(--sm-console-default-divider-color, white));
+	border-bottom-width: 1px;
+	display: flex;
+	flex-grow:0;
+	flex-direction: row;
+	height:var(--sm-console-toolbar-height, 50px);
+	min-height:var(--sm-console-toolbar-height, 50px);
+}
+
+.sm-console__toolbar__button {
+	aspect-ratio:1;
+	flex-grow:0;
+	height:100%;
+	padding:var(--sm-console-toolbar-spacing, 10px);
+	margin:0;
+	background-color:transparent;
+	border-width: 0;
+	opacity:0.8;
+}
+
+.sm-console__toolbar__filter {
+	display: flex;
+	flex-direction: row;
+	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	font-size: var(--sm-console-log-font-size, 25px);
+	color:white;
+}
+
+.sm-console__toolbar__filter__label {
+	font-size: var(--sm-console-log-font-size, 25px);
+	-unity-text-align: middle-center;
+}
+
+.sm-console__toolbar__filter__dropdown {
+	margin:0;
+	padding:0;
+}
+
+.sm-console__toolbar__filter__icon {
+	height:var(--sm-console-toolbar-height, 50px);
+	/*width:var(--sm-console-toolbar-height, 50px);*/
+	aspect-ratio:1;
+	/*padding:10%;*/
+	padding:var(--sm-console-toolbar-spacing, 10px);
+	opacity:0.5;
+}
+
+.sm-console__dropdown-menu {
+	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	color:red;
+}
+
+.sm-console__toolbar__filter__dropdown .unity-base-field__input {
+	margin:0;
+	background-color:transparent;
+	border-width:0;
+}
+
+.sm-console__toolbar__filter__dropdown .unity-text-element {
+	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	background-color:transparent;
+}
+
+.sm-console__toolbar__filter__dropdown .unity-base-dropdown__container-inner {
+	background-color:transparent;
+}
+
+.sm-console__toolbar__filter__dropdown .unity-base-dropdown__container-outer {
+	background-color:transparent;
+	border-color:red;
+}
+
+
+/* button hovered */
+.sm-console__toolbar__button:hover {
+	background-color:#fff1;
+}
+
+/* right floating items */
+.sm-console__toolbar__item--right {
+	border-color: var(--sm-console-divider-color, var(--sm-console-default-divider-color, white));
+	border-left-width: 1px;
+}

@@ -1,0 +1,16 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="./console_log.uss"/>
+    <ui:VisualElement name="Log" data-source-type="Smidgenomics.Unity.Console.ConsoleLogItem, Smidgenomics.Unity.Console" class="sm-console__log">
+        <ui:Label text="00:00:00" name="Timestamp" class="sm-console__log__label sm-console__log__time">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Timestamp" binding-mode="ToTargetOnce"/>
+            </Bindings>
+        </ui:Label>
+        <ui:Label text="Label" name="Text" class="sm-console__log__label sm-console__log__body">
+            <Bindings>
+                <ui:DataBinding property="text" data-source-path="Text" binding-mode="ToTargetOnce"/>
+                <ui:DataBinding property="style.color" data-source-path="LogColor" binding-mode="ToTargetOnce"/>
+            </Bindings>
+        </ui:Label>
+    </ui:VisualElement>
+</ui:UXML>

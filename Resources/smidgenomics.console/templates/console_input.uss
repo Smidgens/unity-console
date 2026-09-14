@@ -1,0 +1,61 @@
+/* Window input area */
+
+.sm-console__input {
+	/*flex-grow: 0;*/
+	display: flex;
+	flex-direction: row;
+	border-color: var(--sm-console-divider-color, var(--sm-console-default-divider-color, white));
+	border-top-width: 1px;
+	height: var(--sm-console-input-height, 70px);
+	min-height:0;
+	max-height: var(--sm-console-input-height, 70px);
+	padding: 0;
+	background-color: rgba(0, 0, 0, 0.533);
+}
+
+.sm-console__input__icon {
+	aspect-ratio: 1;
+	opacity: 0.3;
+	/*padding: var(--sm-console-spacing, var(--sm-console-default-spacing, 5px));*/
+}
+
+.sm-console__input__field {
+	flex-grow: 1;
+	padding: 0;
+	margin: 0;
+	border-width: 0;
+}
+
+.sm-console__input__field .unity-base-field__input {
+	height: 100%;
+	border-width: 0;
+	background-color: transparent;
+	--unity-cursor-color: white;
+}
+
+.sm-console__input__field .unity-text-element {
+	-unity-font-definition: resource("smidgenomics.console/{inconsolata}");
+	font-size: var(--sm-console-input-font-size, 25px);
+}
+
+.sm-console__input__field .unity-text-element__selectable {
+	border-width: 1px;
+	padding: 0;
+	border-radius: 3px;
+	margin: 0;
+	padding-left: var(--console-input-spacing, 10px);
+}
+
+.sm-console__input__field .unity-base-field__input {
+	padding: var(--sm-console-spacing, var(--sm-console-default-spacing, 5px));
+}
+
+.sm-console__input__field .unity-text-element__selectable:hover {
+	border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sm-console__input__field .unity-text-element__selectable:focus {
+	border-color: cyan;
+}
+
+

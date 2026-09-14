@@ -5,16 +5,6 @@ namespace Smidgenomics.Unity.Console
 	using System;
 	using System.Collections.Generic;
 
-	public interface IName
-	{
-		public string Name { get; }
-	}
-
-	public interface IOrder
-	{
-		public int Order { get; }
-	}
-
 	internal static class Sort
 	{
 		public static void ByName<T>(List<T> l, bool desc = false) where T : IName
@@ -32,10 +22,10 @@ namespace Smidgenomics.Unity.Console
 		}
 
 		private static int CompareName<T>(T a, T b)
-		where T : IName => a.Name.CompareTo(b.Name);
+		where T : IName => String.Compare(a.Name, b.Name, StringComparison.Ordinal);
 
 		private static int CompareNameDesc<T>(T a, T b)
-		where T : IName => b.Name.CompareTo(a.Name);
+		where T : IName => String.Compare(b.Name, a.Name, StringComparison.Ordinal);
 
 		private static int CompareOrder<T>(T a, T b)
 		where T : IOrder => a.Order.CompareTo(b.Order);
