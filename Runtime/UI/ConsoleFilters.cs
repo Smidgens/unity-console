@@ -254,7 +254,14 @@ namespace Smidgenomics.Unity.Console
 			{
 				i++;
 				var bitValue = 1 << i;
-				_options.Add((l, bitValue));
+				var label = l;
+
+				if (string.IsNullOrEmpty(l))
+				{
+					label = $"Flag {i}";
+				}
+				
+				_options.Add((label, bitValue));
 			}
 		}
 

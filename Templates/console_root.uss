@@ -2,6 +2,7 @@
 :root {
 	--sm-console-font-default:resource("smidgenomics.console/{inconsolata}");
 	--sm-console-rounding-default:3px;
+	--sm-console-spacing-default: 5px;
 }
 
 .sm-console__dropdown-menu__root {
@@ -17,9 +18,21 @@
 
 .sm-console__dropdown-menu__root .unity-base-dropdown__checkmark {
 	-unity-background-image-tint-color: white;
+	margin:0;
 }
 
 .sm-console__dropdown-menu__container {
 	border-color:var(--divider-color, white);
 	border-radius: var(--sm-console-rounding, var(--sm-console-rounding-default));
+}
+
+.sm-console__dropdown-menu__root .unity-base-dropdown__item {
+	min-height:0;
+	padding:var(--sm-console-spacing, var(--sm-console-spacing-default, 5px));
+}
+
+.sm-console__dropdown-menu__root .unity-base-dropdown__label {
+	margin:0;
+	margin-left:var(--sm-console-spacing, var(--sm-console-spacing-default, 5px));
+	padding:0;
 }

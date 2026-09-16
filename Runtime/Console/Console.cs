@@ -220,7 +220,7 @@ namespace Smidgenomics.Unity.Console
 			public const string LIST = "list";
 			public const string HELP = "describe";
 			public const string INSPECT = "inspect";
-			public const string RUN_SCRIPT = "exec";
+			public const string RUN_SCRIPT = "exec_file";
 			public const string CLEAR = "clear";
 		}
 
@@ -255,32 +255,32 @@ namespace Smidgenomics.Unity.Console
 		{
 			if (flags.HasFlag(EDefaultConsoleCommand.List))
 			{
-				Bind(Keyword.LIST, GetMethod(ListHandlers), this);
+				Bind(Keyword.LIST, GetMethod(ListHandlers), this, "List all commands");
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.ListWildcard))
 			{
-				Bind(Keyword.LIST, GetMethod<string>(ListHandlers), this);
+				Bind(Keyword.LIST, GetMethod<string>(ListHandlers), this, "List all commands (wildcard)");
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Clear))
 			{
-				Bind(Keyword.CLEAR, GetMethod(Clear), this);
+				Bind(Keyword.CLEAR, GetMethod(Clear), this, "Clear console logs");
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Describe))
 			{
-				Bind(Keyword.HELP, GetMethod<string>(Describe), this);
+				Bind(Keyword.HELP, GetMethod<string>(Describe), this, "Show command description");
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Inspect))
 			{
-				Bind(Keyword.INSPECT, GetMethod<string>(Inspect), this);
+				Bind(Keyword.INSPECT, GetMethod<string>(Inspect), this, "Show value of variable");
 			}
 
 			if (flags.HasFlag(EDefaultConsoleCommand.Exec))
 			{
-				Bind(Keyword.RUN_SCRIPT, GetMethod<string>(RunScript), this);
+				Bind(Keyword.RUN_SCRIPT, GetMethod<string>(RunScript), this, "Run file");
 			}
 		}
 
