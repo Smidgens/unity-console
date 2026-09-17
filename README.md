@@ -1,3 +1,7 @@
+# NOTE
+
+Project has been moved here: https://github.com/Smidgenomics/unity-console
+
 ![](/.github/banner.png?raw=true "")
 ![](/.github/gallery.png?raw=true "")
 
